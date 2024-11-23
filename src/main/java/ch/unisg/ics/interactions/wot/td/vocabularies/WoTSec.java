@@ -7,6 +7,7 @@ public final class WoTSec {
   public static final String PREFIX = "https://www.w3.org/2019/wot/security#";
 
   /* Classes */
+  public static final String SCHEME = PREFIX + "scheme";
   public static final String NoSecurityScheme = PREFIX + "NoSecurityScheme";
   public static final String APIKeySecurityScheme = PREFIX + "APIKeySecurityScheme";
   public static final String BasicSecurityScheme = PREFIX + "BasicSecurityScheme";
@@ -29,6 +30,7 @@ public final class WoTSec {
   public static final String identity = PREFIX + "identity";
   public static final String flow = PREFIX + "flow";
   public static final String scopes = PREFIX + "scopes";
+
 
   public static IRI createIRI(String fragment) {
     return SimpleValueFactory.getInstance().createIRI(PREFIX + fragment);

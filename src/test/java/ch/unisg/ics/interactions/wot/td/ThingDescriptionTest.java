@@ -101,7 +101,7 @@ public class ThingDescriptionTest {
 
     final Map<String, Object> c = Map.of(
         WoTSec.in, TokenBasedSecurityScheme.TokenLocation.HEADER,
-        WoTSec.name, SecurityScheme.APIKEY
+        WoTSec.name, "some_name"
     );
     final var apiSc = new APIKeySecurityScheme(c);
 
@@ -127,12 +127,18 @@ public class ThingDescriptionTest {
     o.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     String serialized = o.writeValueAsString(commonTd);
 
-    System.out.println(serialized);
-
-    var s = TDGraphWriter.write(commonTd);
+   // System.out.println(serialized);
+    var tdWriter = new TDGraphWriter(commonTd);
+    tdWriter.setNamespace("td", TD.PREFIX);
+    tdWriter.setNamespace("wotsec", WoTSec.PREFIX);
+    var s = tdWriter.write();
+    //System.out.println(s);
     var t = TDGraphReader.readFromString(ThingDescription.TDFormat.RDF_TURTLE, s);
-    System.out.println(t.getGraph() != null);
-
+    var tdWriter2 = new TDGraphWriter(t);
+    tdWriter2.setNamespace("td", TD.PREFIX);
+    tdWriter2.setNamespace("wotsec", WoTSec.PREFIX);
+    var s2 = tdWriter2.write();
+    System.out.println(s2);
   }
 
 

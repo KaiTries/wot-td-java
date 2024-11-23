@@ -1,5 +1,7 @@
 package ch.unisg.ics.interactions.wot.td.io;
 
+import static org.eclipse.rdf4j.model.util.Values.iri;
+
 import ch.unisg.ics.interactions.wot.td.ThingDescription;
 import ch.unisg.ics.interactions.wot.td.ThingDescription.TDFormat;
 import ch.unisg.ics.interactions.wot.td.affordances.*;
@@ -69,11 +71,11 @@ public class TDGraphReader {
     final var tdBuilder = ThingDescription.builder()
         .title(reader.readThingTitle())
         .type(reader.readThingTypes())
-        .securityDefinitions(reader.readSecuritySchemes())
+        .securityDefinitions(reader.readSecurityDefinitions())
+        .security(reader.readSecurity())
         .properties(reader.readProperties())
         .actions(reader.readActions())
-        .events(reader.readEvents())
-        .graph(reader.getGraph());
+        .events(reader.readEvents());
 
     Optional<String> thingURI = reader.getThingURI();
     thingURI.ifPresent(tdBuilder::uri);
@@ -152,9 +154,9 @@ public class TDGraphReader {
     return Optional.empty();
   }
 
-  Map<String, SecurityScheme> readSecuritySchemes() {
+  Map<String, SecurityScheme> readSecurityDefinitions() {
     Set<Resource> schemeIds = Models.objectResources(model.filter(thingId,
-      rdf.createIRI(TD.hasSecurityConfiguration), null));
+      rdf.createIRI(TD.definesSecurityScheme), null));
 
     if (schemeIds.isEmpty()) {
       throw new InvalidTDException("Missing mandatory security configuration.");
@@ -164,41 +166,48 @@ public class TDGraphReader {
 
     for (Resource schemeId : schemeIds) {
       SecurityScheme scheme;
-      Set<IRI> schemeTypeIRIs = Models.objectIRIs(model.filter(schemeId, RDF.TYPE, null));
-      System.out.println(schemeId);
-      Set<String> semanticTypes = schemeTypeIRIs.stream()
+      final var securitySchemeModel = model.filter(schemeId, iri(WoTSec.SCHEME), null);
+      Set<String> securityScheme = securitySchemeModel.objects().stream()
         .map(Value::stringValue)
         .collect(Collectors.toSet());
 
-      System.out.println("hellooooo");
+      final var securityNameModel = Models
+          .objectLiteral(model.filter(schemeId, RDF.TYPE, null));
+
+
       try {
-        if (semanticTypes.contains(WoTSec.NoSecurityScheme)) {
+        if (securityScheme.contains(WoTSec.NoSecurityScheme)) {
           scheme = SecurityScheme.getNoSecurityScheme();
-        } else if (semanticTypes.contains(WoTSec.APIKeySecurityScheme)) {
-          scheme = readAPIKeySecurityScheme(schemeId, semanticTypes);
-        } else if (semanticTypes.contains(WoTSec.BasicSecurityScheme)) {
-          scheme = readBasicSecurityScheme(schemeId, semanticTypes);
-        } else if (semanticTypes.contains(WoTSec.DigestSecurityScheme)) {
-          scheme = readDigestSecurityScheme(schemeId, semanticTypes);
-        } else if (semanticTypes.contains(WoTSec.BearerSecurityScheme)) {
-          scheme = readBearerSecurityScheme(schemeId, semanticTypes);
-        } else if (semanticTypes.contains(WoTSec.PSKSecurityScheme)) {
-          scheme = readPSKSecurityScheme(schemeId, semanticTypes);
-        } else if (semanticTypes.contains(WoTSec.OAuth2SecurityScheme)) {
-          scheme = readOAuth2SecurityScheme(schemeId, semanticTypes);
+        } else if (securityScheme.contains(WoTSec.APIKeySecurityScheme)) {
+          scheme = readAPIKeySecurityScheme(schemeId, securityScheme);
+        } else if (securityScheme.contains(WoTSec.BasicSecurityScheme)) {
+          scheme = readBasicSecurityScheme(schemeId, securityScheme);
+        } else if (securityScheme.contains(WoTSec.DigestSecurityScheme)) {
+          scheme = readDigestSecurityScheme(schemeId, securityScheme);
+        } else if (securityScheme.contains(WoTSec.BearerSecurityScheme)) {
+          scheme = readBearerSecurityScheme(schemeId, securityScheme);
+        } else if (securityScheme.contains(WoTSec.PSKSecurityScheme)) {
+          scheme = readPSKSecurityScheme(schemeId, securityScheme);
+        } else if (securityScheme.contains(WoTSec.OAuth2SecurityScheme)) {
+          scheme = readOAuth2SecurityScheme(schemeId, securityScheme);
         } else {
           throw new InvalidTDException("Unknown type of security scheme");
         }
 
-        System.out.println("wtfff" + scheme);
-        String securityName = getUniqueSecurityName(scheme.getScheme());
-        schemes.put(securityName, scheme);
+        schemes.put(securityNameModel.get().stringValue(), scheme);
       } catch (Exception e) {
         throw new InvalidTDException("Invalid security scheme configuration", e);
       }
     }
-
     return schemes;
+  }
+
+  Set<String> readSecurity() {
+    final var schemeId = Models.objectLiteral(model.filter(thingId,
+        iri(TD.hasSecurityConfiguration), null));
+    final var s = new HashSet<String>();
+    s.add(schemeId.get().stringValue());
+    return s;
   }
 
   private SecurityScheme readTokenBasedSecurityScheme(TokenBasedSecurityScheme.Builder<?, ?> schemeBuilder, Resource schemeId,

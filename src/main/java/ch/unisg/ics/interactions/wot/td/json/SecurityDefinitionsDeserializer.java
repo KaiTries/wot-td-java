@@ -43,7 +43,6 @@ public class SecurityDefinitionsDeserializer extends JsonDeserializer<Map<String
             if (value.has("name")) {
               config.put(WoTSec.name, value.get("name").asText());
             }
-            config.put(WoTSec.PREFIX + "scheme", schemeType);
             scheme = new APIKeySecurityScheme(config);
             break;
           case "nosec":

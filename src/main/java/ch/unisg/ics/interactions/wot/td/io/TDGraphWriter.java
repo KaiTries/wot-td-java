@@ -83,10 +83,9 @@ public class TDGraphWriter {
 
       Map<String, Object> configuration = s.getConfiguration();
 
-      for (String semanticType : s.getSemanticTypes()) {
-        graphBuilder.add(schemeId, RDF.TYPE, rdf.createIRI(semanticType));
-      }
+      graphBuilder.add(schemeId, RDF.TYPE, scheme);
 
+      graphBuilder.add(schemeId, iri(WoTSec.SCHEME), iri(getSecurityDefinition(s.getScheme())));
       for (Map.Entry<String, Object> configurationEntry : configuration.entrySet()) {
         IRI confTypeIri = rdf.createIRI(configurationEntry.getKey());
         Object confValue = configurationEntry.getValue();
@@ -115,18 +114,18 @@ public class TDGraphWriter {
 
   private TDGraphWriter addSecurity() {
    final var schemas = td.getSecurity();
-   final Map<String, SecurityScheme> securityDefinitions = td.getSecurityDefinitions();
-
-    BNode schemeId = rdf.createBNode();
-    graphBuilder.add(thingId, rdf.createIRI(TD.hasSecurityConfiguration), schemeId);
     for (String schema : schemas) {
-     SecurityScheme s = securityDefinitions.get(schema);
-     s.getSemanticTypes().forEach(t ->
-         graphBuilder.add(
-             schemeId, RDF.TYPE, iri(t))
-     );
-   }
+      graphBuilder.add(thingId, iri(TD.hasSecurityConfiguration), schema);
+    }
     return this;
+  }
+
+  private String getSecurityDefinition(final String scheme) {
+    return switch (scheme) {
+      case "apikey" -> WoTSec.APIKeySecurityScheme;
+      default -> WoTSec.NoSecurityScheme;
+    };
+
   }
 
   private TDGraphWriter addTypes() {

@@ -277,13 +277,13 @@ public class TDGraphReaderTest {
   public void testReadOneSecurityScheme() {
     TDGraphReader reader = new TDGraphReader(RDFFormat.TURTLE, TEST_SIMPLE_TD);
 
-    Map<String, SecurityScheme> schemes = reader.readSecuritySchemes();
+    Map<String, SecurityScheme> schemes = reader.readSecurityDefinitions();
     assertEquals(1, schemes.size());
 
     List<String> nosecSchemes = getSecurityNamesforSchemeName(SecurityScheme.NOSEC, schemes);
     assertEquals(1, nosecSchemes.size());
 
-    assertTrue(reader.readSecuritySchemes().values().stream().anyMatch(scheme ->
+    assertTrue(reader.readSecurityDefinitions().values().stream().anyMatch(scheme ->
       scheme.getSemanticTypes().contains(WoTSec.NoSecurityScheme)));
   }
 
@@ -301,7 +301,7 @@ public class TDGraphReaderTest {
 
     TDGraphReader reader = new TDGraphReader(RDFFormat.TURTLE, testTD);
 
-    Map<String, SecurityScheme> schemes = reader.readSecuritySchemes();
+    Map<String, SecurityScheme> schemes = reader.readSecurityDefinitions();
     assertEquals(1, schemes.size());
 
     List<String> apikeySchemes = getSecurityNamesforSchemeName(SecurityScheme.APIKEY, schemes);
@@ -328,7 +328,7 @@ public class TDGraphReaderTest {
 
     TDGraphReader reader = new TDGraphReader(RDFFormat.TURTLE, testTD);
 
-    Map<String, SecurityScheme> schemes = reader.readSecuritySchemes();
+    Map<String, SecurityScheme> schemes = reader.readSecurityDefinitions();
     assertEquals(1, schemes.size());
 
     List<String> apikeySchemes = getSecurityNamesforSchemeName(SecurityScheme.APIKEY, schemes);
@@ -354,7 +354,7 @@ public class TDGraphReaderTest {
       "  ] .";
 
     Exception exception = assertThrows(InvalidTDException.class, () -> {
-      new TDGraphReader(RDFFormat.TURTLE, testTD).readSecuritySchemes();
+      new TDGraphReader(RDFFormat.TURTLE, testTD).readSecurityDefinitions();
     });
     String expectedMessage = "Invalid security scheme configuration";
     String actualMessage = exception.getMessage();
@@ -374,7 +374,7 @@ public class TDGraphReaderTest {
 
     TDGraphReader reader = new TDGraphReader(RDFFormat.TURTLE, testTD);
 
-    Map<String, SecurityScheme> schemes = reader.readSecuritySchemes();
+    Map<String, SecurityScheme> schemes = reader.readSecurityDefinitions();
     assertEquals(1, schemes.size());
 
     List<String> basicSchemes = getSecurityNamesforSchemeName(SecurityScheme.BASIC, schemes);
@@ -401,7 +401,7 @@ public class TDGraphReaderTest {
 
     TDGraphReader reader = new TDGraphReader(RDFFormat.TURTLE, testTD);
 
-    Map<String, SecurityScheme> schemes = reader.readSecuritySchemes();
+    Map<String, SecurityScheme> schemes = reader.readSecurityDefinitions();
     assertEquals(1, schemes.size());
 
     List<String> basicSchemes = getSecurityNamesforSchemeName(SecurityScheme.BASIC, schemes);
@@ -430,7 +430,7 @@ public class TDGraphReaderTest {
 
     TDGraphReader reader = new TDGraphReader(RDFFormat.TURTLE, testTD);
 
-    Map<String, SecurityScheme> schemes = reader.readSecuritySchemes();
+    Map<String, SecurityScheme> schemes = reader.readSecurityDefinitions();
     assertEquals(1, schemes.size());
 
     List<String> digestSchemes = getSecurityNamesforSchemeName(SecurityScheme.DIGEST, schemes);
@@ -459,7 +459,7 @@ public class TDGraphReaderTest {
 
     TDGraphReader reader = new TDGraphReader(RDFFormat.TURTLE, testTD);
 
-    Map<String, SecurityScheme> schemes = reader.readSecuritySchemes();
+    Map<String, SecurityScheme> schemes = reader.readSecurityDefinitions();
     assertEquals(1, schemes.size());
 
     List<String> digestSchemes = getSecurityNamesforSchemeName(SecurityScheme.DIGEST, schemes);
@@ -487,7 +487,7 @@ public class TDGraphReaderTest {
       "  ] .";
 
     Exception exception = assertThrows(InvalidTDException.class, () -> {
-      new TDGraphReader(RDFFormat.TURTLE, testTD).readSecuritySchemes();
+      new TDGraphReader(RDFFormat.TURTLE, testTD).readSecurityDefinitions();
     });
     String expectedMessage = "Invalid security scheme configuration";
     String actualMessage = exception.getMessage();
@@ -510,7 +510,7 @@ public class TDGraphReaderTest {
 
     TDGraphReader reader = new TDGraphReader(RDFFormat.TURTLE, testTD);
 
-    Map<String, SecurityScheme> schemes = reader.readSecuritySchemes();
+    Map<String, SecurityScheme> schemes = reader.readSecurityDefinitions();
     assertEquals(1, schemes.size());
 
     List<String> bearerSchemes = getSecurityNamesforSchemeName(SecurityScheme.BEARER, schemes);
@@ -542,7 +542,7 @@ public class TDGraphReaderTest {
 
     TDGraphReader reader = new TDGraphReader(RDFFormat.TURTLE, testTD);
 
-    Map<String, SecurityScheme> schemes = reader.readSecuritySchemes();
+    Map<String, SecurityScheme> schemes = reader.readSecurityDefinitions();
     assertEquals(1, schemes.size());
 
     List<String> digestSchemes = getSecurityNamesforSchemeName(SecurityScheme.BEARER, schemes);
@@ -576,8 +576,8 @@ public class TDGraphReaderTest {
         "  ] .";
 
     TDGraphReader reader = new TDGraphReader(RDFFormat.TURTLE, testTD);
-    assertEquals(1, reader.readSecuritySchemes().size());
-    SecurityScheme scheme = reader.readSecuritySchemes().values().iterator().next();
+    assertEquals(1, reader.readSecurityDefinitions().size());
+    SecurityScheme scheme = reader.readSecurityDefinitions().values().iterator().next();
     assertTrue(scheme.getSemanticTypes().contains(WoTSec.BearerSecurityScheme));
     assertEquals(TokenLocation.HEADER,
       ((BearerSecurityScheme) scheme).getTokenLocation());
@@ -596,7 +596,7 @@ public class TDGraphReaderTest {
 
     TDGraphReader reader = new TDGraphReader(RDFFormat.TURTLE, testTD);
 
-    Map<String, SecurityScheme> schemes = reader.readSecuritySchemes();
+    Map<String, SecurityScheme> schemes = reader.readSecurityDefinitions();
     assertEquals(1, schemes.size());
 
     List<String> apikeySchemes = getSecurityNamesforSchemeName(SecurityScheme.PSK, schemes);
@@ -630,9 +630,9 @@ public class TDGraphReaderTest {
 
     TDGraphReader reader = new TDGraphReader(RDFFormat.TURTLE, testTD);
 
-    assertEquals(1, reader.readSecuritySchemes().size());
+    assertEquals(1, reader.readSecurityDefinitions().size());
 
-    SecurityScheme scheme = reader.readSecuritySchemes().values().iterator().next();
+    SecurityScheme scheme = reader.readSecurityDefinitions().values().iterator().next();
     assertTrue(scheme instanceof OAuth2SecurityScheme);
     assertTrue(scheme.getSemanticTypes().contains(WoTSec.OAuth2SecurityScheme));
     assertEquals(scheme.getScheme(), "oauth2");
@@ -662,7 +662,7 @@ public class TDGraphReaderTest {
 
     TDGraphReader reader = new TDGraphReader(RDFFormat.TURTLE, testTD);
     Exception exception = assertThrows(InvalidTDException.class, () -> {
-      reader.readSecuritySchemes();
+      reader.readSecurityDefinitions();
     });
 
     String expectedMessage = "Missing or invalid configuration value of type " + WoTSec.flow +
@@ -687,8 +687,8 @@ public class TDGraphReaderTest {
         "  ] .";
 
     TDGraphReader reader = new TDGraphReader(RDFFormat.TURTLE, testTD);
-    assertEquals(1, reader.readSecuritySchemes().size());
-    SecurityScheme scheme = reader.readSecuritySchemes().values().iterator().next();
+    assertEquals(1, reader.readSecurityDefinitions().size());
+    SecurityScheme scheme = reader.readSecurityDefinitions().values().iterator().next();
     assertTrue(scheme.getSemanticTypes().contains(WoTSec.OAuth2SecurityScheme));
     assertEquals("code", ((OAuth2SecurityScheme) scheme).getFlow());
     assertFalse(((OAuth2SecurityScheme) scheme).getAuthorization().isPresent());
@@ -709,8 +709,8 @@ public class TDGraphReaderTest {
         "  ] .";
 
     TDGraphReader reader = new TDGraphReader(RDFFormat.TURTLE, testTD);
-    assertEquals(1, reader.readSecuritySchemes().size());
-    SecurityScheme scheme = reader.readSecuritySchemes().values().iterator().next();
+    assertEquals(1, reader.readSecurityDefinitions().size());
+    SecurityScheme scheme = reader.readSecurityDefinitions().values().iterator().next();
     assertTrue(scheme.getSemanticTypes().contains(WoTSec.OAuth2SecurityScheme));
     assertEquals("code", ((OAuth2SecurityScheme) scheme).getFlow());
     assertFalse(((OAuth2SecurityScheme) scheme).getToken().isPresent());
@@ -731,8 +731,8 @@ public class TDGraphReaderTest {
         "  ] .";
 
     TDGraphReader reader = new TDGraphReader(RDFFormat.TURTLE, testTD);
-    assertEquals(1, reader.readSecuritySchemes().size());
-    SecurityScheme scheme = reader.readSecuritySchemes().values().iterator().next();
+    assertEquals(1, reader.readSecurityDefinitions().size());
+    SecurityScheme scheme = reader.readSecurityDefinitions().values().iterator().next();
     assertTrue(scheme.getSemanticTypes().contains(WoTSec.OAuth2SecurityScheme));
     assertEquals("code", ((OAuth2SecurityScheme) scheme).getFlow());
     assertFalse(((OAuth2SecurityScheme) scheme).getRefresh().isPresent());
@@ -749,7 +749,7 @@ public class TDGraphReaderTest {
 
     TDGraphReader reader = new TDGraphReader(RDFFormat.TURTLE, testTD);
     Exception exception = assertThrows(InvalidTDException.class, () -> {
-      reader.readSecuritySchemes();
+      reader.readSecurityDefinitions();
     });
 
     String expectedMessage = "Unknown type of security scheme";
@@ -788,10 +788,10 @@ public class TDGraphReaderTest {
 
     TDGraphReader reader = new TDGraphReader(RDFFormat.TURTLE, testTD);
 
-    assertEquals(2, reader.readSecuritySchemes().size());
-    assertTrue(reader.readSecuritySchemes().values().stream().anyMatch(scheme -> scheme
+    assertEquals(2, reader.readSecurityDefinitions().size());
+    assertTrue(reader.readSecurityDefinitions().values().stream().anyMatch(scheme -> scheme
       .getSemanticTypes().contains(WoTSec.NoSecurityScheme)));
-    assertTrue(reader.readSecuritySchemes().values().stream().anyMatch(scheme -> scheme
+    assertTrue(reader.readSecurityDefinitions().values().stream().anyMatch(scheme -> scheme
       .getSemanticTypes().contains(WoTSec.APIKeySecurityScheme)));
   }
 
