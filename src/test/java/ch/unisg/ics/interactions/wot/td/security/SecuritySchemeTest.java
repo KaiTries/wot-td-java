@@ -17,7 +17,7 @@ public class SecuritySchemeTest {
   @Test
   public void testNoSecurityScheme() {
     SecurityScheme scheme = SecurityScheme.getNoSecurityScheme();
-    assertEquals(SecurityScheme.NOSEC, scheme.getSchemeName());
+    assertEquals(SecurityScheme.NOSEC, scheme.getScheme());
     assertTrue(scheme.getSemanticTypes().contains(WoTSec.NoSecurityScheme));
 
     Map<String, Object> conf = scheme.getConfiguration();
@@ -31,7 +31,7 @@ public class SecuritySchemeTest {
       .addSemanticType("sem")
       .build();
 
-    assertEquals(SecurityScheme.APIKEY, scheme.getSchemeName());
+    assertEquals(SecurityScheme.APIKEY, scheme.getScheme());
     assertTrue(scheme.getSemanticTypes().contains(WoTSec.APIKeySecurityScheme));
     assertTrue(scheme.getSemanticTypes().contains("sem"));
 
@@ -50,7 +50,7 @@ public class SecuritySchemeTest {
     APIKeySecurityScheme scheme = new APIKeySecurityScheme.Builder()
       .build();
 
-    assertEquals(SecurityScheme.APIKEY, scheme.getSchemeName());
+    assertEquals(SecurityScheme.APIKEY, scheme.getScheme());
     assertTrue(scheme.getSemanticTypes().contains(WoTSec.APIKeySecurityScheme));
 
     assertEquals(TokenLocation.QUERY, scheme.getTokenLocation());
@@ -68,7 +68,7 @@ public class SecuritySchemeTest {
       .addSemanticType("sem")
       .build();
 
-    assertEquals(SecurityScheme.BASIC, scheme.getSchemeName());
+    assertEquals(SecurityScheme.BASIC, scheme.getScheme());
     assertTrue(scheme.getSemanticTypes().contains(WoTSec.BasicSecurityScheme));
     assertTrue(scheme.getSemanticTypes().contains("sem"));
 
@@ -87,7 +87,7 @@ public class SecuritySchemeTest {
     BasicSecurityScheme scheme = new BasicSecurityScheme.Builder()
       .build();
 
-    assertEquals(SecurityScheme.BASIC, scheme.getSchemeName());
+    assertEquals(SecurityScheme.BASIC, scheme.getScheme());
     assertTrue(scheme.getSemanticTypes().contains(WoTSec.BasicSecurityScheme));
 
     assertEquals(TokenLocation.HEADER, scheme.getTokenLocation());
@@ -106,7 +106,7 @@ public class SecuritySchemeTest {
       .addSemanticType("sem")
       .build();
 
-    assertEquals(SecurityScheme.DIGEST, scheme.getSchemeName());
+    assertEquals(SecurityScheme.DIGEST, scheme.getScheme());
     assertTrue(scheme.getSemanticTypes().contains(WoTSec.DigestSecurityScheme));
     assertTrue(scheme.getSemanticTypes().contains("sem"));
 
@@ -127,7 +127,7 @@ public class SecuritySchemeTest {
     DigestSecurityScheme scheme = new DigestSecurityScheme.Builder()
       .build();
 
-    assertEquals(SecurityScheme.DIGEST, scheme.getSchemeName());
+    assertEquals(SecurityScheme.DIGEST, scheme.getScheme());
     assertTrue(scheme.getSemanticTypes().contains(WoTSec.DigestSecurityScheme));
 
     assertEquals(TokenLocation.HEADER, scheme.getTokenLocation());
@@ -150,7 +150,7 @@ public class SecuritySchemeTest {
       .addSemanticType("sem")
       .build();
 
-    assertEquals(SecurityScheme.BEARER, scheme.getSchemeName());
+    assertEquals(SecurityScheme.BEARER, scheme.getScheme());
     assertTrue(scheme.getSemanticTypes().contains(WoTSec.BearerSecurityScheme));
     assertTrue(scheme.getSemanticTypes().contains("sem"));
 
@@ -176,7 +176,7 @@ public class SecuritySchemeTest {
     BearerSecurityScheme scheme = new BearerSecurityScheme.Builder()
       .build();
 
-    assertEquals(SecurityScheme.BEARER, scheme.getSchemeName());
+    assertEquals(SecurityScheme.BEARER, scheme.getScheme());
     assertTrue(scheme.getSemanticTypes().contains(WoTSec.BearerSecurityScheme));
 
     assertEquals(TokenLocation.HEADER, scheme.getTokenLocation());
@@ -199,7 +199,7 @@ public class SecuritySchemeTest {
       .addSemanticType("sem")
       .build();
 
-    assertEquals(SecurityScheme.PSK, scheme.getSchemeName());
+    assertEquals(SecurityScheme.PSK, scheme.getScheme());
     assertTrue(scheme.getSemanticTypes().contains(WoTSec.PSKSecurityScheme));
     assertTrue(scheme.getSemanticTypes().contains("sem"));
 
@@ -223,7 +223,7 @@ public class SecuritySchemeTest {
       .addSemanticType("sem")
       .build();
 
-    assertEquals(SecurityScheme.OAUTH2, scheme.getSchemeName());
+    assertEquals(SecurityScheme.OAUTH2, scheme.getScheme());
     assertTrue(scheme.getSemanticTypes().contains(WoTSec.OAuth2SecurityScheme));
     assertTrue(scheme.getSemanticTypes().contains("sem"));
 

@@ -117,11 +117,13 @@ public class TDGraphWriter {
    final var schemas = td.getSecurity();
    final Map<String, SecurityScheme> securityDefinitions = td.getSecurityDefinitions();
 
+    BNode schemeId = rdf.createBNode();
+    graphBuilder.add(thingId, rdf.createIRI(TD.hasSecurityConfiguration), schemeId);
     for (String schema : schemas) {
      SecurityScheme s = securityDefinitions.get(schema);
      s.getSemanticTypes().forEach(t ->
          graphBuilder.add(
-             thingId, iri(TD.hasSecurityConfiguration), iri(t))
+             schemeId, RDF.TYPE, iri(t))
      );
    }
     return this;
@@ -130,7 +132,7 @@ public class TDGraphWriter {
   private TDGraphWriter addTypes() {
     graphBuilder.add(thingId, RDF.TYPE, rdf.createIRI(TD.Thing));
 
-    for (String type : td.getTypes()) {
+    for (String type : td.getType()) {
       if (type.equals("Thing")) {
         graphBuilder.add(thingId, RDF.TYPE, rdf.createIRI(TD.Thing));
       } else {

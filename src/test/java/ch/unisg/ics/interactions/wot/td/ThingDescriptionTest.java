@@ -10,25 +10,30 @@ import ch.unisg.ics.interactions.wot.td.io.TDGraphWriter;
 import ch.unisg.ics.interactions.wot.td.json.ContextDeserializer;
 import ch.unisg.ics.interactions.wot.td.json.PropertiesDeserializer;
 import ch.unisg.ics.interactions.wot.td.json.SecurityDefinitionsDeserializer;
+import ch.unisg.ics.interactions.wot.td.json.SecuritySchemeSerializer;
 import ch.unisg.ics.interactions.wot.td.json.ThingDescriptionDeserializer;
 import ch.unisg.ics.interactions.wot.td.json.TypeDeserializer;
 import ch.unisg.ics.interactions.wot.td.security.APIKeySecurityScheme;
 import ch.unisg.ics.interactions.wot.td.security.SecurityScheme;
+import ch.unisg.ics.interactions.wot.td.security.TokenBasedSecurityScheme;
 import ch.unisg.ics.interactions.wot.td.vocabularies.HCTL;
 import ch.unisg.ics.interactions.wot.td.vocabularies.HTV;
 import ch.unisg.ics.interactions.wot.td.vocabularies.JSONSchema;
 import ch.unisg.ics.interactions.wot.td.vocabularies.TD;
 import ch.unisg.ics.interactions.wot.td.vocabularies.WoTSec;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import org.junit.Before;
@@ -93,10 +98,18 @@ public class ThingDescriptionTest {
       .addSemanticType("ex:Alarm")
       .build();
 
+
+    final Map<String, Object> c = Map.of(
+        WoTSec.in, TokenBasedSecurityScheme.TokenLocation.HEADER,
+        WoTSec.name, SecurityScheme.APIKEY
+    );
+    final var apiSc = new APIKeySecurityScheme(c);
+
     commonTd = ThingDescription.builder()
+        .type(Set.of(TD.Thing))
         .title("A Thing")
-        .security(Set.of("nosec_sc"))
-        .securityDefinitions(Map.of("nosec_sc", SecurityScheme.getNoSecurityScheme()))
+        .security(Set.of("api_sc"))
+        .securityDefinitions(Map.of("api_sc", apiSc))
         .properties(List.of(prop0,prop1))
         .actions(List.of(action0,action1))
         .events(List.of(event0,event1))
@@ -107,15 +120,22 @@ public class ThingDescriptionTest {
   public void testOutputJson() throws JsonProcessingException {
     final var o = new ObjectMapper();
     o.registerModule(new Jdk8Module());
+    SimpleModule module = new SimpleModule();
+    module.addSerializer(SecurityScheme.class, new SecuritySchemeSerializer());
+    o.registerModule(module);
     o.enable(SerializationFeature.INDENT_OUTPUT);
+    o.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     String serialized = o.writeValueAsString(commonTd);
+
+    System.out.println(serialized);
 
     var s = TDGraphWriter.write(commonTd);
     var t = TDGraphReader.readFromString(ThingDescription.TDFormat.RDF_TURTLE, s);
     System.out.println(t.getGraph() != null);
 
-    System.out.println(s);
   }
+
+
   @Test
   public void testInputJson() throws IOException, URISyntaxException {
     final var inputJsonLdString = Files.readString(
@@ -172,24 +192,24 @@ public class ThingDescriptionTest {
   public void testOneType() {
     ThingDescription td = ThingDescription.builder()
         .title("My Thing")
-        .types(Set.of("http://w3id.org/eve#Artifact"))
+        .type(Set.of("http://w3id.org/eve#Artifact"))
         .build();
 
-    assertEquals(1, td.getTypes().size());
-    assertTrue(td.getTypes().contains("http://w3id.org/eve#Artifact"));
+    assertEquals(1, td.getType().size());
+    assertTrue(td.getType().contains("http://w3id.org/eve#Artifact"));
   }
 
   @Test
   public void testMultipleTypes() {
     ThingDescription td = ThingDescription.builder()
         .title("My Thing")
-        .types(Set.of(TD.Thing, "http://w3id.org/eve#Artifact", "http://iot-schema.org/eve#Light"))
+        .type(Set.of(TD.Thing, "http://w3id.org/eve#Artifact", "http://iot-schema.org/eve#Light"))
         .build();
 
-    assertEquals(3, td.getTypes().size());
-    assertTrue(td.getTypes().contains(TD.Thing));
-    assertTrue(td.getTypes().contains("http://w3id.org/eve#Artifact"));
-    assertTrue(td.getTypes().contains("http://iot-schema.org/eve#Light"));
+    assertEquals(3, td.getType().size());
+    assertTrue(td.getType().contains(TD.Thing));
+    assertTrue(td.getType().contains("http://w3id.org/eve#Artifact"));
+    assertTrue(td.getType().contains("http://iot-schema.org/eve#Light"));
   }
 
   @Test
@@ -213,7 +233,7 @@ public class ThingDescriptionTest {
 
     Optional<SecurityScheme> scheme = td.getFirstSecuritySchemeByType(WoTSec.APIKeySecurityScheme);
     assertTrue(scheme.isPresent());
-    assertTrue(SecurityScheme.APIKEY.equals(scheme.get().getSchemeName()));
+    assertTrue(SecurityScheme.APIKEY.equals(scheme.get().getScheme()));
   }
 
   @Test

@@ -635,7 +635,7 @@ public class TDGraphReaderTest {
     SecurityScheme scheme = reader.readSecuritySchemes().values().iterator().next();
     assertTrue(scheme instanceof OAuth2SecurityScheme);
     assertTrue(scheme.getSemanticTypes().contains(WoTSec.OAuth2SecurityScheme));
-    assertEquals(scheme.getSchemeName(), "oauth2");
+    assertEquals(scheme.getScheme(), "oauth2");
     assertEquals("https://example.com/authorization", ((OAuth2SecurityScheme) scheme).getAuthorization().get());
     assertEquals("https://example.com/token/1", ((OAuth2SecurityScheme) scheme).getToken().get());
     assertEquals("https://example.com/token/2", ((OAuth2SecurityScheme) scheme).getRefresh().get());
@@ -1517,8 +1517,8 @@ public class TDGraphReaderTest {
     // Check metadata
     assertEquals("My Thing", td.getTitle());
     assertEquals("http://example.org/#thing", td.getUri());
-    assertEquals(1, td.getTypes().size());
-    assertTrue(td.getTypes().contains("https://www.w3.org/2019/wot/td#Thing"));
+    assertEquals(1, td.getType().size());
+    assertTrue(td.getType().contains("https://www.w3.org/2019/wot/td#Thing"));
     assertTrue(td.getSecurityDefinitions().keySet().stream().anyMatch(scheme -> scheme
       .contains(WoTSec.NoSecurityScheme)));
     assertEquals(1, td.getActions().size());

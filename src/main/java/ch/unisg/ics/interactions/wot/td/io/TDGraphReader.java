@@ -68,7 +68,7 @@ public class TDGraphReader {
 
     final var tdBuilder = ThingDescription.builder()
         .title(reader.readThingTitle())
-        .types(reader.readThingTypes())
+        .type(reader.readThingTypes())
         .securityDefinitions(reader.readSecuritySchemes())
         .properties(reader.readProperties())
         .actions(reader.readActions())
@@ -165,11 +165,12 @@ public class TDGraphReader {
     for (Resource schemeId : schemeIds) {
       SecurityScheme scheme;
       Set<IRI> schemeTypeIRIs = Models.objectIRIs(model.filter(schemeId, RDF.TYPE, null));
-
+      System.out.println(schemeId);
       Set<String> semanticTypes = schemeTypeIRIs.stream()
-        .map(iri -> iri.stringValue())
+        .map(Value::stringValue)
         .collect(Collectors.toSet());
 
+      System.out.println("hellooooo");
       try {
         if (semanticTypes.contains(WoTSec.NoSecurityScheme)) {
           scheme = SecurityScheme.getNoSecurityScheme();
@@ -189,7 +190,8 @@ public class TDGraphReader {
           throw new InvalidTDException("Unknown type of security scheme");
         }
 
-        String securityName = getUniqueSecurityName(scheme.getSchemeName());
+        System.out.println("wtfff" + scheme);
+        String securityName = getUniqueSecurityName(scheme.getScheme());
         schemes.put(securityName, scheme);
       } catch (Exception e) {
         throw new InvalidTDException("Invalid security scheme configuration", e);

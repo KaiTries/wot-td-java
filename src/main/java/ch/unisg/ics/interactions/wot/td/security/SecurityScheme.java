@@ -1,23 +1,10 @@
 package ch.unisg.ics.interactions.wot.td.security;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.util.*;
-import java.util.stream.Collectors;
-
-import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.eclipse.rdf4j.model.util.ModelBuilder;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
 
 import ch.unisg.ics.interactions.wot.td.vocabularies.WoTSec;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "scheme")
-@JsonSubTypes({
-    @JsonSubTypes.Type(value = APIKeySecurityScheme.class, name = "apikey"),
-    @JsonSubTypes.Type(value = BasicSecurityScheme.class, name = "nosec")
-})
+
 public abstract class SecurityScheme {
 
   public static final String NOSEC = "nosec";
@@ -28,14 +15,17 @@ public abstract class SecurityScheme {
   public static final String PSK = "psk";
   public static final String OAUTH2 = "oauth2";
 
-  private final String schemeName;
+
+
+  private final String scheme;
   private final Map<String, Object> configuration;
   private final Set<String> semanticTypes;
 
 
-  protected SecurityScheme(String schemeName, Map<String, Object> configuration,
+
+  protected SecurityScheme(String scheme, Map<String, Object> configuration,
                            Set<String> semanticTypes) {
-    this.schemeName = schemeName;
+    this.scheme = scheme;
     this.configuration = configuration;
     this.semanticTypes = semanticTypes;
   }
@@ -46,8 +36,8 @@ public abstract class SecurityScheme {
    *
    * @return the name of the security scheme
    */
-  public String getSchemeName() {
-    return schemeName;
+  public String getScheme() {
+    return scheme;
   }
 
   /**

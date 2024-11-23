@@ -7,6 +7,7 @@ import ch.unisg.ics.interactions.wot.td.io.InvalidTDException;
 import ch.unisg.ics.interactions.wot.td.security.SecurityScheme;
 import ch.unisg.ics.interactions.wot.td.vocabularies.WoTSec;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,7 +35,7 @@ public class ThingDescription {
   private final Set<String> context = Set.of("https://www.w3.org/2022/wot/td/v1.1");
   // @type
   @Builder.Default
-  private final Set<String> types = Set.of();
+  private final Set<String> type = Set.of();
   // id
   private final String id;
   // title
@@ -74,7 +75,7 @@ public class ThingDescription {
       @JsonProperty("security") Set<String> security,
       @JsonProperty("securityDefinitions") Map<String, SecurityScheme> securityDefinitions,
       @JsonProperty("uri") String uri,
-      @JsonProperty("types") Set<String> types,
+      @JsonProperty("type") Set<String> types,
       @JsonProperty("baseURI") String baseURI,
       @JsonProperty("properties") List<PropertyAffordance> properties,
       @JsonProperty("actions") List<ActionAffordance> actions,
@@ -105,7 +106,7 @@ public class ThingDescription {
     }
 
     this.uri = uri;
-    this.types = types;
+    this.type = types;
     this.baseURI = baseURI;
 
     this.properties = properties;
@@ -137,7 +138,7 @@ public class ThingDescription {
   public Optional<SecurityScheme> getFirstSecuritySchemeByName(String name) {
     for (SecurityScheme securityScheme : securityDefinitions.values()) {
 
-      if (securityScheme.getSchemeName().equals(name)) {
+      if (securityScheme.getScheme().equals(name)) {
         return Optional.of(securityScheme);
       }
     }

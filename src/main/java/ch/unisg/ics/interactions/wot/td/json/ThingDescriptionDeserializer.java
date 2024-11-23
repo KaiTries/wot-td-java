@@ -2,9 +2,7 @@ package ch.unisg.ics.interactions.wot.td.json;
 
 import ch.unisg.ics.interactions.wot.td.ThingDescription;
 import ch.unisg.ics.interactions.wot.td.affordances.PropertyAffordance;
-import ch.unisg.ics.interactions.wot.td.security.APIKeySecurityScheme;
 import ch.unisg.ics.interactions.wot.td.security.SecurityScheme;
-import ch.unisg.ics.interactions.wot.td.security.TokenBasedSecurityScheme;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -12,9 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -95,7 +91,7 @@ public class ThingDescriptionDeserializer extends JsonDeserializer<ThingDescript
     final var tdBuilder = ThingDescription.builder();
     tdBuilder.context(context);
     tdBuilder.title(title);
-    tdBuilder.types(types);
+    tdBuilder.type(types);
     tdBuilder.id(id);
     tdBuilder.description(description);
     tdBuilder.securityDefinitions(securityDefinitions);
