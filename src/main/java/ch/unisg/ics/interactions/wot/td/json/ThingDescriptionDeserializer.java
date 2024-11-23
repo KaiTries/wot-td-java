@@ -3,6 +3,7 @@ package ch.unisg.ics.interactions.wot.td.json;
 import ch.unisg.ics.interactions.wot.td.ThingDescription;
 import ch.unisg.ics.interactions.wot.td.affordances.PropertyAffordance;
 import ch.unisg.ics.interactions.wot.td.security.SecurityScheme;
+import ch.unisg.ics.interactions.wot.td.vocabularies.TD;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -50,37 +51,37 @@ public class ThingDescriptionDeserializer extends JsonDeserializer<ThingDescript
       throw new IOException("TD missing type \"Thing\"");
     }
     final Set<String> types = typeDeserializer.deserialize(typeNode.traverse(mapper), ctxt);
-    if (!types.contains("Thing")) {
+    if (!types.contains(TD.Thing)) {
       throw new IOException("TD missing type \"Thing\"");
     }
 
     // Deserialize Title
-    final var title = getTextNode(rootNode, "title");
+    final var title = getTextNode(rootNode, TD.title);
 
     // Deserialize id
-    final var id = getTextNode(rootNode, "id");
+    final var id = getTextNode(rootNode, "@id");
 
     // Deserialize description
-    final var description = getTextNode(rootNode, "description");
+    final var description = getTextNode(rootNode, TD.description);
 
     // Deserialize securityDefinitions
-    JsonNode securityDefinitionsNode = rootNode.get("securityDefinitions");
+    JsonNode securityDefinitionsNode = rootNode.get(TD.definesSecurityScheme);
     final Map<String, SecurityScheme> securityDefinitions = securityDefinitionsNode != null
         ? securityDefinitionsDeserializer.deserialize(securityDefinitionsNode.traverse(mapper), ctxt)
         : Map.of();
 
     // Deserialize security
-    JsonNode securityNode = rootNode.get("security");
+    JsonNode securityNode = rootNode.get(TD.hasSecurityConfiguration);
     Set<String> securitySchemes = getSecurity(securityDefinitions, securityNode);
 
     // Deserialize Base
-    String base = getTextNode(rootNode, "base");
+    String base = getTextNode(rootNode, TD.baseUri);
 
     // TODO: should be removed? id is correct
     String uri = id; //getTextNode(rootNode, "uri");
 
     // Deserialize Properties
-    JsonNode propertiesNode = rootNode.get("properties");
+    JsonNode propertiesNode = rootNode.get(TD.hasPropertyAffordance);
     List<PropertyAffordance> properties = propertiesNode != null
         ? propertiesDeserializer.deserialize(propertiesNode.traverse(mapper), ctxt)
         : List.of();
@@ -132,7 +133,11 @@ public class ThingDescriptionDeserializer extends JsonDeserializer<ThingDescript
 
   private String getTextNode(final JsonNode rootNode, final String name) {
     final JsonNode nameNode = rootNode.get(name);
-    return nameNode == null ? null : nameNode.asText();
+    if(nameNode.isArray()) {
+      final JsonNode nameValueNode = nameNode.get(0).get("@value");
+      return nameValueNode == null ? null : nameValueNode.asText();
+    }
+    return nameNode.asText();
   }
 
   private Set<String> getSecurity(final Map<String, SecurityScheme> securityDefinitions,

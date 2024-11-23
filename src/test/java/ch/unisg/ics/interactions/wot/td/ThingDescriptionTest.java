@@ -20,6 +20,8 @@ import ch.unisg.ics.interactions.wot.td.vocabularies.HTV;
 import ch.unisg.ics.interactions.wot.td.vocabularies.JSONSchema;
 import ch.unisg.ics.interactions.wot.td.vocabularies.TD;
 import ch.unisg.ics.interactions.wot.td.vocabularies.WoTSec;
+import com.apicatalog.jsonld.JsonLd;
+import com.apicatalog.jsonld.JsonLdError;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -141,11 +143,17 @@ public class ThingDescriptionTest {
 
 
   @Test
-  public void testInputJson() throws IOException, URISyntaxException {
+  public void testInputJson() throws IOException, URISyntaxException, JsonLdError {
     final var inputJsonLdString = Files.readString(
         Path.of(ClassLoader.getSystemResource("example_td.td.jsonld").toURI()),
         StandardCharsets.UTF_8
     );
+
+    var j = JsonLd.expand("file:/Users/kaischultz/github/wot-td-java/src/test/resources" +
+            "/example_td.td.jsonld")    // HTTP(S) and File schemes supported
+        .get().getFirst();
+    var tJ = j.toString();
+
 
     final var o = new ObjectMapper();
     o.registerModule(new Jdk8Module());
@@ -159,7 +167,8 @@ public class ThingDescriptionTest {
     );
     o.registerModule(module);
 
-    ThingDescription t = o.readValue(inputJsonLdString, ThingDescription.class);
+    ThingDescription t = o.readValue(tJ, ThingDescription.class);
+
 
     var s = new TDGraphWriter(t);
     s.setNamespace("td",TD.PREFIX);
@@ -174,7 +183,10 @@ public class ThingDescriptionTest {
     o.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     String serialized = o.writeValueAsString(t);
 
-    System.out.println(serialized);
+    // System.out.println(serialized);
+
+
+
 
 
   }
