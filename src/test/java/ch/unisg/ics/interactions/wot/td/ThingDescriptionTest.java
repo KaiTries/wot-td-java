@@ -10,7 +10,6 @@ import ch.unisg.ics.interactions.wot.td.io.TDGraphWriter;
 import ch.unisg.ics.interactions.wot.td.json.ContextDeserializer;
 import ch.unisg.ics.interactions.wot.td.json.PropertiesDeserializer;
 import ch.unisg.ics.interactions.wot.td.json.SecurityDefinitionsDeserializer;
-import ch.unisg.ics.interactions.wot.td.json.SecuritySchemeSerializer;
 import ch.unisg.ics.interactions.wot.td.json.ThingDescriptionDeserializer;
 import ch.unisg.ics.interactions.wot.td.json.TypeDeserializer;
 import ch.unisg.ics.interactions.wot.td.security.APIKeySecurityScheme;
@@ -121,7 +120,6 @@ public class ThingDescriptionTest {
     final var o = new ObjectMapper();
     o.registerModule(new Jdk8Module());
     SimpleModule module = new SimpleModule();
-    module.addSerializer(SecurityScheme.class, new SecuritySchemeSerializer());
     o.registerModule(module);
     o.enable(SerializationFeature.INDENT_OUTPUT);
     o.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -153,11 +151,12 @@ public class ThingDescriptionTest {
     o.registerModule(new Jdk8Module());
     SimpleModule module = new SimpleModule();
     module.addDeserializer(ThingDescription.class, new ThingDescriptionDeserializer(
-        new ContextDeserializer(),
-        new TypeDeserializer(),
-        new SecurityDefinitionsDeserializer(),
-        new PropertiesDeserializer()
-    ));
+            new ContextDeserializer(),
+            new TypeDeserializer(),
+            new SecurityDefinitionsDeserializer(),
+            new PropertiesDeserializer()
+        )
+    );
     o.registerModule(module);
 
     ThingDescription t = o.readValue(inputJsonLdString, ThingDescription.class);
@@ -169,6 +168,14 @@ public class ThingDescriptionTest {
     s.setNamespace("htv", HTV.PREFIX);
     s.setNamespace("hctl", HCTL.PREFIX);
     System.out.println(s.write());
+
+    o.registerModule(module);
+    o.enable(SerializationFeature.INDENT_OUTPUT);
+    o.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    String serialized = o.writeValueAsString(t);
+
+    System.out.println(serialized);
+
 
   }
 
