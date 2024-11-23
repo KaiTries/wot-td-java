@@ -125,7 +125,7 @@ public class ThingDescriptionDeserializer extends JsonDeserializer<ThingDescript
         securitySchemes,
         securityDefinitions,
         uri,
-        new HashSet<>(), // types
+        types, // types
         base,
         properties, // properties
         new ArrayList<>(), // actions

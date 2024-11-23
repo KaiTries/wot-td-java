@@ -23,6 +23,7 @@ public final class TD {
   public static final String hasEventAffordance = PREFIX + "hasEventAffordance";
 
   public static final String hasSecurityConfiguration = PREFIX + "hasSecurityConfiguration";
+  public static final String definesSecurityScheme = PREFIX + "definesSecurityScheme";
 
   public static final String isObservable = PREFIX + "isObservable";
 

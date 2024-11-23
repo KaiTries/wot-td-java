@@ -1,5 +1,7 @@
 package ch.unisg.ics.interactions.wot.td.io;
 
+import static org.eclipse.rdf4j.model.util.Values.iri;
+
 import ch.unisg.ics.interactions.wot.td.ThingDescription;
 import ch.unisg.ics.interactions.wot.td.affordances.*;
 import ch.unisg.ics.interactions.wot.td.schemas.DataSchema;
@@ -53,6 +55,7 @@ public class TDGraphWriter {
   public String write() {
     return this.addTypes()
       .addTitle()
+      .addSecuritySchemes()
       .addSecurity()
       .addBaseURI()
       .addProperties()
@@ -66,19 +69,21 @@ public class TDGraphWriter {
     return graphBuilder.build();
   }
 
-  private TDGraphWriter addSecurity() {
-    Map<String, SecurityScheme> securitySchemes = td.getSecurityDefinitions();
+  private TDGraphWriter addSecuritySchemes() {
+    Map<String, SecurityScheme> securityDefinitions = td.getSecurityDefinitions();
 
     List<IRI> confTypesForIris = new ArrayList<>(Arrays.asList(rdf.createIRI(WoTSec.authorization),
       rdf.createIRI(WoTSec.token), rdf.createIRI(WoTSec.refresh)));
 
-    for (SecurityScheme scheme : securitySchemes.values()) {
+    for (String scheme : securityDefinitions.keySet()) {
       BNode schemeId = rdf.createBNode();
-      graphBuilder.add(thingId, rdf.createIRI(TD.hasSecurityConfiguration), schemeId);
+      graphBuilder.add(thingId, rdf.createIRI(TD.definesSecurityScheme), schemeId);
 
-      Map<String, Object> configuration = scheme.getConfiguration();
+      SecurityScheme s = securityDefinitions.get(scheme);
 
-      for (String semanticType : scheme.getSemanticTypes()) {
+      Map<String, Object> configuration = s.getConfiguration();
+
+      for (String semanticType : s.getSemanticTypes()) {
         graphBuilder.add(schemeId, RDF.TYPE, rdf.createIRI(semanticType));
       }
 
@@ -105,7 +110,20 @@ public class TDGraphWriter {
         }
       }
     }
+    return this;
+  }
 
+  private TDGraphWriter addSecurity() {
+   final var schemas = td.getSecurity();
+   final Map<String, SecurityScheme> securityDefinitions = td.getSecurityDefinitions();
+
+    for (String schema : schemas) {
+     SecurityScheme s = securityDefinitions.get(schema);
+     s.getSemanticTypes().forEach(t ->
+         graphBuilder.add(
+             thingId, iri(TD.hasSecurityConfiguration), iri(t))
+     );
+   }
     return this;
   }
 
@@ -113,7 +131,11 @@ public class TDGraphWriter {
     graphBuilder.add(thingId, RDF.TYPE, rdf.createIRI(TD.Thing));
 
     for (String type : td.getTypes()) {
-      graphBuilder.add(thingId, RDF.TYPE, rdf.createIRI(type));
+      if (type.equals("Thing")) {
+        graphBuilder.add(thingId, RDF.TYPE, rdf.createIRI(TD.Thing));
+      } else {
+        graphBuilder.add(thingId, RDF.TYPE, rdf.createIRI(type));
+      }
     }
 
     return this;
@@ -256,19 +278,22 @@ public class TDGraphWriter {
 
       graphBuilder.add(interactionId, rdf.createIRI(TD.hasForm), formId);
 
-      // Only writes the method name for forms with one operation type (to avoid ambiguity)
-      if (form.getMethodName().isPresent() && form.getOperationTypes().size() == 1) {
-        if (Arrays.stream(HTTP_URI_SCHEMES).anyMatch(form.getTarget()::contains)) {
-          graphBuilder.add(formId, rdf.createIRI(HTV.methodName), form.getMethodName().get());
-        } else if (Arrays.stream(COAP_URI_SCHEMES).anyMatch(form.getTarget()::contains)) {
-          graphBuilder.add(formId, rdf.createIRI(COV.methodName), form.getMethodName().get());
-        }
-      }
+
       var target = form.getTarget();
       if (form.getTarget().isEmpty()) {
         System.out.println(" empty target using td base");
         target = td.getBaseURI() + target;
       }
+
+      // Only writes the method name for forms with one operation type (to avoid ambiguity)
+      if (form.getMethodName().isPresent() && form.getOperationTypes().size() == 1) {
+        if (Arrays.stream(HTTP_URI_SCHEMES).anyMatch(target::contains)) {
+          graphBuilder.add(formId, rdf.createIRI(HTV.methodName), form.getMethodName().get());
+        } else if (Arrays.stream(COAP_URI_SCHEMES).anyMatch(form.getTarget()::contains)) {
+          graphBuilder.add(formId, rdf.createIRI(COV.methodName), form.getMethodName().get());
+        }
+      }
+
 
       graphBuilder.add(formId, rdf.createIRI(HCTL.hasTarget), rdf.createIRI(conversion(target)));
       graphBuilder.add(formId, rdf.createIRI(HCTL.forContentType), form.getContentType());

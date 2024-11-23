@@ -14,6 +14,9 @@ import ch.unisg.ics.interactions.wot.td.json.ThingDescriptionDeserializer;
 import ch.unisg.ics.interactions.wot.td.json.TypeDeserializer;
 import ch.unisg.ics.interactions.wot.td.security.APIKeySecurityScheme;
 import ch.unisg.ics.interactions.wot.td.security.SecurityScheme;
+import ch.unisg.ics.interactions.wot.td.vocabularies.HCTL;
+import ch.unisg.ics.interactions.wot.td.vocabularies.HTV;
+import ch.unisg.ics.interactions.wot.td.vocabularies.JSONSchema;
 import ch.unisg.ics.interactions.wot.td.vocabularies.TD;
 import ch.unisg.ics.interactions.wot.td.vocabularies.WoTSec;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -134,10 +137,11 @@ public class ThingDescriptionTest {
     ThingDescription t = o.readValue(inputJsonLdString, ThingDescription.class);
 
     var s = new TDGraphWriter(t);
-    s.setNamespace("td","https://www.w3.org/2019/wot/td#");
-    s.setNamespace("wotsec", "https://www.w3.org/2019/wot/security#");
-    s.setNamespace("jsonSchema", "https://www.w3.org/2019/wot/json-schema#");
-    s.setNamespace("htv","https://www.w3.org/2019/wot/hypermedia#");
+    s.setNamespace("td",TD.PREFIX);
+    s.setNamespace("wotsec", WoTSec.PREFIX);
+    s.setNamespace("jsonSchema", JSONSchema.PREFIX);
+    s.setNamespace("htv", HTV.PREFIX);
+    s.setNamespace("hctl", HCTL.PREFIX);
     System.out.println(s.write());
 
   }

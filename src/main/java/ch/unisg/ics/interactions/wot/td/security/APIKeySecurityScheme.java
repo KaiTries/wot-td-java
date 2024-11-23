@@ -17,7 +17,7 @@ public class APIKeySecurityScheme extends TokenBasedSecurityScheme {
   }
 
   public APIKeySecurityScheme(Map<String, Object> configuration) {
-    super(SecurityScheme.APIKEY, configuration, Set.of(),
+    super(SecurityScheme.APIKEY, configuration, Set.of(WoTSec.APIKeySecurityScheme),
         (TokenLocation) configuration.get(WoTSec.in),
         Optional.of((String) configuration.get(WoTSec.name)));
   }
