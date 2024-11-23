@@ -18,6 +18,7 @@ public class InteractionAffordance {
 
   protected final String name;
   protected Optional<String> title;
+  protected Optional<String> description;
   protected List<String> types;
   protected List<Form> forms;
 
@@ -136,9 +137,14 @@ public class InteractionAffordance {
   public static abstract class Builder<T extends InteractionAffordance, S extends Builder<T, S>> {
     protected final String name;
     protected Optional<String> title;
+    protected Optional<String> description;
     protected List<String> types;
     protected List<Form> forms;
     protected Optional<Map<String,DataSchema>> uriVariables;
+
+    protected  Builder(String name) {
+      this(name, new ArrayList<>());
+    }
 
     protected Builder(String name, Form form) {
       this(name, new ArrayList<Form>(Arrays.asList(form)));
@@ -155,6 +161,11 @@ public class InteractionAffordance {
     @SuppressWarnings("unchecked")
     public S addTitle(String title) {
       this.title = Optional.of(title);
+      return (S) this;
+    }
+
+    public S addDescription(String description) {
+      this.description = Optional.of(description);
       return (S) this;
     }
 

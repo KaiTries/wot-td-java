@@ -1,5 +1,7 @@
 package ch.unisg.ics.interactions.wot.td.security;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -11,6 +13,11 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 
 import ch.unisg.ics.interactions.wot.td.vocabularies.WoTSec;
 
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "scheme")
+@JsonSubTypes({
+    @JsonSubTypes.Type(value = APIKeySecurityScheme.class, name = "apikey"),
+    @JsonSubTypes.Type(value = BasicSecurityScheme.class, name = "nosec")
+})
 public abstract class SecurityScheme {
 
   public static final String NOSEC = "nosec";
@@ -24,6 +31,7 @@ public abstract class SecurityScheme {
   private final String schemeName;
   private final Map<String, Object> configuration;
   private final Set<String> semanticTypes;
+
 
   protected SecurityScheme(String schemeName, Map<String, Object> configuration,
                            Set<String> semanticTypes) {

@@ -8,11 +8,10 @@ import ch.unisg.ics.interactions.wot.td.security.SecurityScheme;
 import ch.unisg.ics.interactions.wot.td.vocabularies.WoTSec;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.eclipse.rdf4j.model.IRI;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.Value;
-import org.eclipse.rdf4j.model.util.ModelBuilder;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -26,56 +25,70 @@ import java.util.stream.Collectors;
  * W3C Recommendation.
  */
 
+@Builder
+@Getter
+@AllArgsConstructor
 public class ThingDescription {
+  // @context
+  @Builder.Default
+  private final Set<String> context = Set.of("https://www.w3.org/2022/wot/td/v1.1");
+  // @type
+  @Builder.Default
+  private final Set<String> types = Set.of();
+  // id
+  private final String id;
+  // title
   private final String title;
-  private final Set<SecurityScheme> security;
+
+  // TODO: Add multiple titles support
+  // private final Set<String> titles;
+
+  private final String description;
+
+  // security
+  private final Set<String> security;
+
+  // securityDefinitions
   private final Map<String, SecurityScheme> securityDefinitions;
 
-  private final Optional<String> uri;
-  private final Set<String> types;
-  private final Optional<String> baseURI;
+  private final String uri;
 
-  private final List<PropertyAffordance> properties;
-  private final List<ActionAffordance> actions;
-  private final List<EventAffordance> events;
+  private final String baseURI;
 
-  private final Optional<Model> graph;
+  @Builder.Default
+  private final List<PropertyAffordance> properties = List.of();
+  @Builder.Default
+  private final List<ActionAffordance> actions = List.of();
+  @Builder.Default
+  private final List<EventAffordance> events = List.of();
+
+  private final Model graph;
 
 
   @JsonCreator
   public ThingDescription(
+      @JsonProperty("context") Set<String> context,
       @JsonProperty("title") String title,
-      @JsonProperty("security") Set<SecurityScheme> security,
-      @JsonProperty("securityDefinitions") HashMap<String, SecurityScheme> securityDefinitions,
-      @JsonProperty("uri") Optional<String> uri,
+      @JsonProperty("id") String id,
+      @JsonProperty("description") String description,
+      @JsonProperty("security") Set<String> security,
+      @JsonProperty("securityDefinitions") Map<String, SecurityScheme> securityDefinitions,
+      @JsonProperty("uri") String uri,
       @JsonProperty("types") Set<String> types,
-      @JsonProperty("baseURI") Optional<String> baseURI,
+      @JsonProperty("baseURI") String baseURI,
       @JsonProperty("properties") List<PropertyAffordance> properties,
       @JsonProperty("actions") List<ActionAffordance> actions,
       @JsonProperty("events") List<EventAffordance> events,
-      @JsonProperty("graph") Optional<Model> graph
+      @JsonProperty("graph") Model graph
   ) {
-    this.title = title;
-    this.security = security;
-    this.securityDefinitions = securityDefinitions;
-    this.uri = uri;
-    this.types = types;
-    this.baseURI = baseURI;
-    this.properties = properties;
-    this.actions = actions;
-    this.events = events;
-    this.graph = graph;
-  }
-
-  protected ThingDescription(String title, Set<SecurityScheme> security, Map<String,
-    SecurityScheme> securityDefinitions, Optional<String> uri, Set<String> types, Optional<String> baseURI,
-                             List<PropertyAffordance> properties, List<ActionAffordance> actions,
-                             List<EventAffordance> events, Optional<Model> graph) {
 
     if (title == null) {
       throw new InvalidTDException("The title of a Thing cannot be null.");
     }
+    this.context = context;
     this.title = title;
+    this.id = id;
+    this.description = description;
 
     this.security = security;
     this.securityDefinitions = securityDefinitions;
@@ -83,10 +96,10 @@ public class ThingDescription {
     // Set up nosec security
     if (this.security.isEmpty()) {
       if (getFirstSecuritySchemeByType(WoTSec.NoSecurityScheme).isPresent()) {
-        this.security.add(getFirstSecuritySchemeByType(WoTSec.NoSecurityScheme).get());
+        this.security.add("nosec");
       } else {
         SecurityScheme nosec = SecurityScheme.getNoSecurityScheme();
-        this.security.add(nosec);
+        this.security.add("nosec");
         this.securityDefinitions.put("nosec", nosec);
       }
     }
@@ -100,18 +113,6 @@ public class ThingDescription {
     this.events = events;
 
     this.graph = graph;
-  }
-
-  public String getTitle() {
-    return title;
-  }
-
-  public Set<SecurityScheme> getSecuritySchemes() {
-    return security;
-  }
-
-  public Map<String, SecurityScheme> getSecurityDefinitions() {
-    return securityDefinitions;
   }
 
   /**
@@ -157,18 +158,6 @@ public class ThingDescription {
       }
     }
     return Optional.empty();
-  }
-
-  public Optional<String> getThingURI() {
-    return uri;
-  }
-
-  public Set<String> getSemanticTypes() {
-    return types;
-  }
-
-  public Optional<String> getBaseURI() {
-    return baseURI;
   }
 
   /**
@@ -337,22 +326,6 @@ public class ThingDescription {
     return Optional.empty();
   }
 
-  public List<PropertyAffordance> getProperties() {
-    return this.properties;
-  }
-
-  public List<ActionAffordance> getActions() {
-    return this.actions;
-  }
-
-  public List<EventAffordance> getEvents() {
-    return this.events;
-  }
-
-  public Optional<Model> getGraph() {
-    return graph;
-  }
-
   /**
    * Supported serialization formats -- currently only RDF serialization formats, namely Turtle and
    * JSON-LD 1.0. The version of JSON-LD currently supported is the one provided by RDF4J.
@@ -360,160 +333,5 @@ public class ThingDescription {
   public enum TDFormat {
     RDF_TURTLE,
     RDF_JSONLD
-  }
-
-  /**
-   * Helper class used to construct a <code>ThingDescription</code>. All TDs should have a mandatory
-   * <code>title</code> field. In addition to the optional fields defined by the W3C Recommendation,
-   * the <code>addGraph</code> method allows to add any other metadata as an RDF graph.
-   * <p>
-   * Implements a fluent API.
-   */
-  public static class Builder {
-    private final String title;
-    private final Set<SecurityScheme> security;
-    private final HashMap<String, SecurityScheme> securityDefinitions;
-    private final Set<String> types;
-    private final List<PropertyAffordance> properties;
-    private final List<ActionAffordance> actions;
-    private final List<EventAffordance> events;
-    private Optional<String> uri;
-    private Optional<String> baseURI;
-    private Optional<Model> graph;
-
-    public Builder(String title) {
-      this.title = title;
-      this.security = new HashSet<SecurityScheme>();
-      this.securityDefinitions = new HashMap<String, SecurityScheme>();
-
-      this.uri = Optional.empty();
-      this.baseURI = Optional.empty();
-      this.types = new HashSet<String>();
-
-      this.properties = new ArrayList<PropertyAffordance>();
-      this.actions = new ArrayList<ActionAffordance>();
-      this.events = new ArrayList<EventAffordance>();
-
-      this.graph = Optional.empty();
-    }
-
-    public Builder addSecurityScheme(String name, SecurityScheme security, boolean applied) {
-      if (applied) {
-        this.security.add(security);
-      }
-      this.securityDefinitions.put(name, security);
-      return this;
-    }
-
-    public Builder addSecurityScheme(String name, SecurityScheme security) {
-      return addSecurityScheme(name, security, true);
-    }
-
-    public Builder addSecuritySchemes(Map<String, SecurityScheme> security, boolean applied) {
-      if (applied) {
-        this.security.addAll(security.values());
-      }
-      this.securityDefinitions.putAll(security);
-      return this;
-    }
-
-    public Builder addSecuritySchemes(Map<String, SecurityScheme> security) {
-      return addSecuritySchemes(security, true);
-    }
-
-    public Builder addThingURI(String uri) {
-      this.uri = Optional.of(uri);
-      return this;
-    }
-
-    public Builder addBaseURI(String baseURI) {
-      this.baseURI = Optional.of(baseURI);
-      return this;
-    }
-
-    public Builder addSemanticType(String type) {
-      this.types.add(type);
-      return this;
-    }
-
-    public Builder addSemanticTypes(Set<String> thingTypes) {
-      this.types.addAll(thingTypes);
-      return this;
-    }
-
-    public Builder addProperty(PropertyAffordance property) {
-      this.properties.add(property);
-      return this;
-    }
-
-    public Builder addProperties(List<PropertyAffordance> properties) {
-      this.properties.addAll(properties);
-      return this;
-    }
-
-    public Builder addAction(ActionAffordance action) {
-      this.actions.add(action);
-      return this;
-    }
-
-    public Builder addActions(List<ActionAffordance> actions) {
-      this.actions.addAll(actions);
-      return this;
-    }
-
-    public Builder addEvent(EventAffordance event) {
-      this.events.add(event);
-      return this;
-    }
-
-    public Builder addEvents(List<EventAffordance> events) {
-      this.events.addAll(events);
-      return this;
-    }
-
-    /**
-     * Adds an RDF graph. If an RDF graph is already present, it will be merged with the new graph.
-     *
-     * @param graph the RDF graph to be added
-     * @return this <code>Builder</code>
-     */
-    public Builder addGraph(Model graph) {
-      if (this.graph.isPresent()) {
-        this.graph.get().addAll(graph);
-      } else {
-        this.graph = Optional.of(graph);
-      }
-
-      return this;
-    }
-
-    /**
-     * Convenience method used to add a single triple. If an RDF graph is already present, the triple
-     * will be added to the existing graph.
-     *
-     * @param subject   the subject
-     * @param predicate the predicate
-     * @param object    the object
-     * @return this <code>Builder</code>
-     */
-    public Builder addTriple(Resource subject, IRI predicate, Value object) {
-      if (this.graph.isPresent()) {
-        this.graph.get().add(subject, predicate, object);
-      } else {
-        this.graph = Optional.of(new ModelBuilder().add(subject, predicate, object).build());
-      }
-
-      return this;
-    }
-
-    /**
-     * Constructs and returns a <code>ThingDescription</code>.
-     *
-     * @return the constructed <code>ThingDescription</code>
-     */
-    public ThingDescription build() {
-      return new ThingDescription(title, security, securityDefinitions, uri, types, baseURI, properties, actions,
-        events, graph);
-    }
   }
 }

@@ -27,7 +27,7 @@ public class TDGraphWriter {
   private final ValueFactory rdf = SimpleValueFactory.getInstance();
 
   public TDGraphWriter(ThingDescription td) {
-    this.thingId = td.getThingURI().isPresent() ? rdf.createIRI(td.getThingURI().get())
+    this.thingId = td.getUri() != null ? rdf.createIRI(td.getUri())
       : rdf.createBNode();
 
     this.td = td;
@@ -112,7 +112,7 @@ public class TDGraphWriter {
   private TDGraphWriter addTypes() {
     graphBuilder.add(thingId, RDF.TYPE, rdf.createIRI(TD.Thing));
 
-    for (String type : td.getSemanticTypes()) {
+    for (String type : td.getTypes()) {
       graphBuilder.add(thingId, RDF.TYPE, rdf.createIRI(type));
     }
 
@@ -125,9 +125,9 @@ public class TDGraphWriter {
   }
 
   private TDGraphWriter addBaseURI() {
-    if (td.getBaseURI().isPresent()) {
+    if (td.getBaseURI() != null) {
       graphBuilder.add(thingId, rdf.createIRI(TD.hasBase),
-        rdf.createIRI(td.getBaseURI().get()));
+        rdf.createIRI(td.getBaseURI()));
     }
 
     return this;
@@ -206,10 +206,10 @@ public class TDGraphWriter {
   }
 
   private TDGraphWriter addGraph() {
-    if (td.getGraph().isPresent()) {
-      getModel().addAll(td.getGraph().get());
+    if (td.getGraph() != null) {
+      getModel().addAll(td.getGraph());
 
-      td.getGraph().get().getNamespaces().stream()
+      td.getGraph().getNamespaces().stream()
         .filter(ns -> !getModel().getNamespace(ns.getPrefix()).isPresent())
         .forEach(graphBuilder::setNamespace);
     }
@@ -264,7 +264,13 @@ public class TDGraphWriter {
           graphBuilder.add(formId, rdf.createIRI(COV.methodName), form.getMethodName().get());
         }
       }
-      graphBuilder.add(formId, rdf.createIRI(HCTL.hasTarget), rdf.createIRI(conversion(form.getTarget())));
+      var target = form.getTarget();
+      if (form.getTarget().isEmpty()) {
+        System.out.println(" empty target using td base");
+        target = td.getBaseURI() + target;
+      }
+
+      graphBuilder.add(formId, rdf.createIRI(HCTL.hasTarget), rdf.createIRI(conversion(target)));
       graphBuilder.add(formId, rdf.createIRI(HCTL.forContentType), form.getContentType());
 
       for (String opType : form.getOperationTypes()) {

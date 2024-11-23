@@ -66,23 +66,20 @@ public class TDGraphReader {
       reader = new TDGraphReader(RDFFormat.JSONLD, representation);
     }
 
-    ThingDescription.Builder tdBuilder = new ThingDescription.Builder(reader.readThingTitle())
-      .addSemanticTypes(reader.readThingTypes())
-      .addSecuritySchemes(reader.readSecuritySchemes())
-      .addProperties(reader.readProperties())
-      .addActions(reader.readActions())
-      .addEvents(reader.readEvents())
-        .addGraph(reader.getGraph());
+    final var tdBuilder = ThingDescription.builder()
+        .title(reader.readThingTitle())
+        .types(reader.readThingTypes())
+        .securityDefinitions(reader.readSecuritySchemes())
+        .properties(reader.readProperties())
+        .actions(reader.readActions())
+        .events(reader.readEvents())
+        .graph(reader.getGraph());
 
     Optional<String> thingURI = reader.getThingURI();
-    if (thingURI.isPresent()) {
-      tdBuilder.addThingURI(thingURI.get());
-    }
+    thingURI.ifPresent(tdBuilder::uri);
 
     Optional<String> base = reader.readBaseURI();
-    if (base.isPresent()) {
-      tdBuilder.addBaseURI(base.get());
-    }
+    base.ifPresent(tdBuilder::baseURI);
 
     return tdBuilder.build();
   }
@@ -91,9 +88,7 @@ public class TDGraphReader {
     loadModel(format, representation, "");
 
     Optional<String> baseURI = readBaseURI();
-    if (baseURI.isPresent()) {
-      loadModel(format, representation, baseURI.get());
-    }
+    baseURI.ifPresent(s -> loadModel(format, representation, s));
 
     try {
       thingId = Models.subject(model.filter(null, rdf.createIRI(TD.hasSecurityConfiguration),

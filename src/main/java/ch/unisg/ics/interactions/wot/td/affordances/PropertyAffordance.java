@@ -30,6 +30,13 @@ public class PropertyAffordance extends InteractionAffordance {
     private DataSchema schema;
     private boolean observable;
 
+    public Builder(String name) {
+      super(name);
+
+      this.schema = DataSchema.getEmptySchema();
+      this.observable = false;
+    }
+
     public Builder(String name, List<Form> forms) {
       super(name, forms);
 

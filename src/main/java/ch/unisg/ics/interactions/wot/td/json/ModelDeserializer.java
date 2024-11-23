@@ -1,4 +1,4 @@
-package ch.unisg.ics.interactions.wot.td;
+package ch.unisg.ics.interactions.wot.td.json;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;

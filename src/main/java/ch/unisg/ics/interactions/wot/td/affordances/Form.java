@@ -1,8 +1,11 @@
 package ch.unisg.ics.interactions.wot.td.affordances;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+
 
 public class Form {
 
@@ -12,8 +15,13 @@ public class Form {
   private final Optional<String> subProtocol;
   private Optional<String> methodName;
 
-  private Form(String href, Optional<String> methodName, String mediaType, Set<String> operationTypes,
-               Optional<String> subProtocol) {
+  @JsonCreator
+  public Form(
+      @JsonProperty("href")String href,
+      @JsonProperty("htv:methodName")Optional<String> methodName,
+      @JsonProperty("contentType") String mediaType,
+      @JsonProperty("op") Set<String> operationTypes,
+      @JsonProperty("subprotocol") Optional<String> subProtocol) {
     this.methodName = methodName;
     this.target = href;
     this.contentType = mediaType;

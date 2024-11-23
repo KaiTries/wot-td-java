@@ -18,6 +18,11 @@ repositories {
 }
 
 dependencies {
+  // https://mvnrepository.com/artifact/org.projectlombok/lombok
+  compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.34'
+
+  annotationProcessor 'org.projectlombok:lombok:1.18.34'
+
   implementation 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
   implementation 'org.apache.httpcomponents.client5:httpclient5-fluent:5.3.1'
   implementation 'org.eclipse.californium:californium-core:3.6.0'

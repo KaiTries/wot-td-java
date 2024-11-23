@@ -5,6 +5,13 @@ import ch.unisg.ics.interactions.wot.td.affordances.EventAffordance;
 import ch.unisg.ics.interactions.wot.td.affordances.Form;
 import ch.unisg.ics.interactions.wot.td.affordances.PropertyAffordance;
 import ch.unisg.ics.interactions.wot.td.io.InvalidTDException;
+import ch.unisg.ics.interactions.wot.td.io.TDGraphReader;
+import ch.unisg.ics.interactions.wot.td.io.TDGraphWriter;
+import ch.unisg.ics.interactions.wot.td.json.ContextDeserializer;
+import ch.unisg.ics.interactions.wot.td.json.PropertiesDeserializer;
+import ch.unisg.ics.interactions.wot.td.json.SecurityDefinitionsDeserializer;
+import ch.unisg.ics.interactions.wot.td.json.ThingDescriptionDeserializer;
+import ch.unisg.ics.interactions.wot.td.json.TypeDeserializer;
 import ch.unisg.ics.interactions.wot.td.security.APIKeySecurityScheme;
 import ch.unisg.ics.interactions.wot.td.security.SecurityScheme;
 import ch.unisg.ics.interactions.wot.td.vocabularies.TD;
@@ -19,8 +26,8 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Set;
-import org.eclipse.rdf4j.model.Model;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -83,15 +90,14 @@ public class ThingDescriptionTest {
       .addSemanticType("ex:Alarm")
       .build();
 
-    commonTd = new ThingDescription.Builder("A Thing")
-      .addSecurityScheme("nosec_sc", SecurityScheme.getNoSecurityScheme())
-      .addProperty(prop0)
-      .addProperty(prop1)
-      .addAction(action0)
-      .addAction(action1)
-      .addEvent(event0)
-      .addEvent(event1)
-      .build();
+    commonTd = ThingDescription.builder()
+        .title("A Thing")
+        .security(Set.of("nosec_sc"))
+        .securityDefinitions(Map.of("nosec_sc", SecurityScheme.getNoSecurityScheme()))
+        .properties(List.of(prop0,prop1))
+        .actions(List.of(action0,action1))
+        .events(List.of(event0,event1))
+        .build();
   }
 
   @Test
@@ -100,7 +106,12 @@ public class ThingDescriptionTest {
     o.registerModule(new Jdk8Module());
     o.enable(SerializationFeature.INDENT_OUTPUT);
     String serialized = o.writeValueAsString(commonTd);
-    System.out.println(serialized);
+
+    var s = TDGraphWriter.write(commonTd);
+    var t = TDGraphReader.readFromString(ThingDescription.TDFormat.RDF_TURTLE, s);
+    System.out.println(t.getGraph() != null);
+
+    System.out.println(s);
   }
   @Test
   public void testInputJson() throws IOException, URISyntaxException {
@@ -112,76 +123,89 @@ public class ThingDescriptionTest {
     final var o = new ObjectMapper();
     o.registerModule(new Jdk8Module());
     SimpleModule module = new SimpleModule();
-    module.addDeserializer(Model.class, new ModelDeserializer());
-    module.addDeserializer(SecurityScheme.class, new SecuritySchemeDeserializer());
+    module.addDeserializer(ThingDescription.class, new ThingDescriptionDeserializer(
+        new ContextDeserializer(),
+        new TypeDeserializer(),
+        new SecurityDefinitionsDeserializer(),
+        new PropertiesDeserializer()
+    ));
     o.registerModule(module);
 
     ThingDescription t = o.readValue(inputJsonLdString, ThingDescription.class);
 
+    var s = new TDGraphWriter(t);
+    s.setNamespace("td","https://www.w3.org/2019/wot/td#");
+    s.setNamespace("wotsec", "https://www.w3.org/2019/wot/security#");
+    s.setNamespace("jsonSchema", "https://www.w3.org/2019/wot/json-schema#");
+    s.setNamespace("htv","https://www.w3.org/2019/wot/hypermedia#");
+    System.out.println(s.write());
 
   }
 
   @Test
   public void testTitle() {
-    ThingDescription td = new ThingDescription.Builder("My Thing").build();
+    ThingDescription td = ThingDescription.builder().title("My Thing").build();
 
     assertEquals("My Thing", td.getTitle());
   }
 
   @Test(expected = InvalidTDException.class)
   public void testTitleNull() {
-    new ThingDescription.Builder(null).build();
+    ThingDescription.builder().title(null).build();
   }
 
   @Test
   public void testURI() {
-    ThingDescription td = new ThingDescription.Builder("My Thing")
-      .addThingURI("http://example.org/#thing")
-      .build();
+    ThingDescription td = ThingDescription.builder()
+        .title("My Thing")
+        .uri("http://example.org/#thing")
+        .build();
 
-    assertEquals("http://example.org/#thing", td.getThingURI().get());
+    assertEquals("http://example.org/#thing", td.getUri());
   }
 
   @Test
   public void testOneType() {
-    ThingDescription td = new ThingDescription.Builder("My Thing")
-      .addSemanticType("http://w3id.org/eve#Artifact")
-      .build();
+    ThingDescription td = ThingDescription.builder()
+        .title("My Thing")
+        .types(Set.of("http://w3id.org/eve#Artifact"))
+        .build();
 
-    assertEquals(1, td.getSemanticTypes().size());
-    assertTrue(td.getSemanticTypes().contains("http://w3id.org/eve#Artifact"));
+    assertEquals(1, td.getTypes().size());
+    assertTrue(td.getTypes().contains("http://w3id.org/eve#Artifact"));
   }
 
   @Test
   public void testMultipleTypes() {
-    ThingDescription td = new ThingDescription.Builder("My Thing")
-      .addSemanticType(TD.Thing)
-      .addSemanticType("http://w3id.org/eve#Artifact")
-      .addSemanticType("http://iot-schema.org/eve#Light")
-      .build();
+    ThingDescription td = ThingDescription.builder()
+        .title("My Thing")
+        .types(Set.of(TD.Thing, "http://w3id.org/eve#Artifact", "http://iot-schema.org/eve#Light"))
+        .build();
 
-    assertEquals(3, td.getSemanticTypes().size());
-    assertTrue(td.getSemanticTypes().contains(TD.Thing));
-    assertTrue(td.getSemanticTypes().contains("http://w3id.org/eve#Artifact"));
-    assertTrue(td.getSemanticTypes().contains("http://iot-schema.org/eve#Light"));
+    assertEquals(3, td.getTypes().size());
+    assertTrue(td.getTypes().contains(TD.Thing));
+    assertTrue(td.getTypes().contains("http://w3id.org/eve#Artifact"));
+    assertTrue(td.getTypes().contains("http://iot-schema.org/eve#Light"));
   }
 
   @Test
   public void testBaseURI() {
-    ThingDescription td = new ThingDescription.Builder("My Thing")
-      .addThingURI("http://example.org/#thing")
-      .addBaseURI("http://example.org/")
-      .build();
+    ThingDescription td = ThingDescription.builder()
+        .title("My Thing")
+        .uri("http://example.org/#thing")
+        .baseURI("http://example.org/")
+        .build();
 
-    assertEquals("http://example.org/", td.getBaseURI().get());
+    assertEquals("http://example.org/", td.getBaseURI());
   }
 
   @Test
   public void testGetFirstSecuritySchemeByType() {
-    ThingDescription td = new ThingDescription.Builder("Secured Thing")
-      .addSecurityScheme("nosec_sc", SecurityScheme.getNoSecurityScheme())
-      .addSecurityScheme("apikey_sc", new APIKeySecurityScheme.Builder().build())
-      .build();
+    ThingDescription td = ThingDescription.builder()
+        .title("Secured Thing")
+        .securityDefinitions(Map.of("nosec_sc", SecurityScheme.getNoSecurityScheme(),
+            "apikey_sc", new APIKeySecurityScheme.Builder().build()))
+        .build();
 
     Optional<SecurityScheme> scheme = td.getFirstSecuritySchemeByType(WoTSec.APIKeySecurityScheme);
     assertTrue(scheme.isPresent());
