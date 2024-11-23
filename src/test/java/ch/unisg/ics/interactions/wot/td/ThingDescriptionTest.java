@@ -9,6 +9,18 @@ import ch.unisg.ics.interactions.wot.td.security.APIKeySecurityScheme;
 import ch.unisg.ics.interactions.wot.td.security.SecurityScheme;
 import ch.unisg.ics.interactions.wot.td.vocabularies.TD;
 import ch.unisg.ics.interactions.wot.td.vocabularies.WoTSec;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Set;
+import org.eclipse.rdf4j.model.Model;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -80,6 +92,33 @@ public class ThingDescriptionTest {
       .addEvent(event0)
       .addEvent(event1)
       .build();
+  }
+
+  @Test
+  public void testOutputJson() throws JsonProcessingException {
+    final var o = new ObjectMapper();
+    o.registerModule(new Jdk8Module());
+    o.enable(SerializationFeature.INDENT_OUTPUT);
+    String serialized = o.writeValueAsString(commonTd);
+    System.out.println(serialized);
+  }
+  @Test
+  public void testInputJson() throws IOException, URISyntaxException {
+    final var inputJsonLdString = Files.readString(
+        Path.of(ClassLoader.getSystemResource("example_td.td.jsonld").toURI()),
+        StandardCharsets.UTF_8
+    );
+
+    final var o = new ObjectMapper();
+    o.registerModule(new Jdk8Module());
+    SimpleModule module = new SimpleModule();
+    module.addDeserializer(Model.class, new ModelDeserializer());
+    module.addDeserializer(SecurityScheme.class, new SecuritySchemeDeserializer());
+    o.registerModule(module);
+
+    ThingDescription t = o.readValue(inputJsonLdString, ThingDescription.class);
+
+
   }
 
   @Test

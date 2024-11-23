@@ -21,7 +21,7 @@ import org.eclipse.rdf4j.rio.helpers.StatementCollector;
 final class ReadWriteUtils {
   private final static Logger LOGGER = Logger.getLogger(ReadWriteUtils.class.getCanonicalName());
 
-  static Model readModelFromString(RDFFormat format, String description, String baseURI) 
+  static Model readModelFromString(String description, String baseURI)
       throws RDFParseException, RDFHandlerException, IOException {
     StringReader stringReader = new StringReader(description);
     

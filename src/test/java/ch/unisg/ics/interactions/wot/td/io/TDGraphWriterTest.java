@@ -20,7 +20,6 @@ import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFHandlerException;
 import org.eclipse.rdf4j.rio.RDFParseException;
 import org.junit.Test;
@@ -1040,7 +1039,7 @@ public class TDGraphWriterTest {
 
   private void assertIsomorphicGraphs(String expectedTD, ThingDescription td) throws RDFParseException,
     RDFHandlerException, IOException {
-    Model expectedModel = ReadWriteUtils.readModelFromString(RDFFormat.TURTLE, expectedTD, IO_BASE_IRI);
+    Model expectedModel = ReadWriteUtils.readModelFromString(expectedTD, IO_BASE_IRI);
 
     String description = new TDGraphWriter(td)
       .setNamespace("td", "https://www.w3.org/2019/wot/td#")
@@ -1057,7 +1056,7 @@ public class TDGraphWriterTest {
 
     System.out.println(description);
 
-    Model tdModel = ReadWriteUtils.readModelFromString(RDFFormat.TURTLE, description, IO_BASE_IRI);
+    Model tdModel = ReadWriteUtils.readModelFromString(description, IO_BASE_IRI);
 
     assertTrue(Models.isomorphic(expectedModel, tdModel));
   }

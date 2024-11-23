@@ -13,6 +13,11 @@ public class APIKeySecurityScheme extends TokenBasedSecurityScheme {
     super(SecurityScheme.APIKEY, configuration, semanticTypes, in, name);
   }
 
+  public APIKeySecurityScheme(Map<String, Object> configuration) {
+    super(SecurityScheme.APIKEY, configuration, Set.of(), (TokenLocation) configuration.get("in"),
+        (Optional<String>) configuration.get("name"));
+  }
+
   public static class Builder extends TokenBasedSecurityScheme.Builder<APIKeySecurityScheme,
     APIKeySecurityScheme.Builder> {
 

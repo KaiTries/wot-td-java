@@ -148,7 +148,7 @@ public class SchemaGraphWriterTest {
         .build();
 
     String description = getTestModelDescription(schema);
-    Model schemaModel = ReadWriteUtils.readModelFromString(RDFFormat.TURTLE, description,
+    Model schemaModel = ReadWriteUtils.readModelFromString(description,
         IO_BASE_IRI);
 
     Optional<Literal> minimum = Models.objectLiteral(schemaModel.filter(null,
@@ -345,11 +345,11 @@ public class SchemaGraphWriterTest {
 
   private void assertModel(String expectedSchema, DataSchema schema) throws RDFParseException,
       RDFHandlerException, IOException {
-    Model expectedModel = ReadWriteUtils.readModelFromString(RDFFormat.TURTLE, expectedSchema,
+    Model expectedModel = ReadWriteUtils.readModelFromString(expectedSchema,
         IO_BASE_IRI);
 
     String description = getTestModelDescription(schema);
-    Model schemaModel = ReadWriteUtils.readModelFromString(RDFFormat.TURTLE, description,
+    Model schemaModel = ReadWriteUtils.readModelFromString(description,
         IO_BASE_IRI);
 
     assertTrue(Models.isomorphic(expectedModel, schemaModel));

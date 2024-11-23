@@ -10,7 +10,6 @@ import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFHandlerException;
 import org.eclipse.rdf4j.rio.RDFParseException;
 import org.junit.Test;
@@ -185,7 +184,7 @@ public class SchemaGraphReaderTest {
         "    js:required \"string_value\" ;\n" +
         "] .\n";
 
-    Model model = ReadWriteUtils.readModelFromString(RDFFormat.TURTLE, testNestedSemanticObject,
+    Model model = ReadWriteUtils.readModelFromString(testNestedSemanticObject,
         IO_BASE_IRI);
     Optional<Resource> nodeId = Models.subject(model.filter(null, RDF.TYPE,
         SimpleValueFactory.getInstance().createIRI(PREFIX + "SemObject")));
@@ -270,7 +269,7 @@ public class SchemaGraphReaderTest {
         "    js:oneOf [ a js:ObjectSchema, ex:Schema1 ] \n" +
         "] .";
 
-    Model model = ReadWriteUtils.readModelFromString(RDFFormat.TURTLE, testObject,
+    Model model = ReadWriteUtils.readModelFromString(testObject,
       IO_BASE_IRI);
     Optional<Resource> nodeId = Models.subject(model.filter(null, RDF.TYPE,
       rdf.createIRI(JSONSchema.ObjectSchema)));
@@ -301,7 +300,7 @@ public class SchemaGraphReaderTest {
         "    js:oneOf [ a js:ObjectSchema, ex:Schema1 ] \n" +
         "] .";
 
-    Model model = ReadWriteUtils.readModelFromString(RDFFormat.TURTLE, testObject,
+    Model model = ReadWriteUtils.readModelFromString(testObject,
       IO_BASE_IRI);
     Optional<Resource> nodeId = Models.subject(model.filter(null, RDF.TYPE,
       rdf.createIRI(JSONSchema.DataSchema)));
@@ -347,7 +346,7 @@ public class SchemaGraphReaderTest {
 
   private ObjectSchema assertObjectMetadata(String testSemObject, String semType, int props, int req)
       throws RDFParseException, RDFHandlerException, IOException {
-    Model model = ReadWriteUtils.readModelFromString(RDFFormat.TURTLE, testSemObject,
+    Model model = ReadWriteUtils.readModelFromString(testSemObject,
         IO_BASE_IRI);
     Optional<Resource> nodeId = Models.subject(model.filter(null, RDF.TYPE,
         rdf.createIRI(JSONSchema.ObjectSchema)));
@@ -368,7 +367,7 @@ public class SchemaGraphReaderTest {
 
   private ArraySchema assertUserAccountArrayMetadata(String testArray) throws RDFParseException,
       RDFHandlerException, IOException {
-    Model model = ReadWriteUtils.readModelFromString(RDFFormat.TURTLE, testArray, IO_BASE_IRI);
+    Model model = ReadWriteUtils.readModelFromString(testArray, IO_BASE_IRI);
     Optional<Resource> nodeId = Models.subject(model.filter(null, RDF.TYPE,
         rdf.createIRI(JSONSchema.ArraySchema)));
 

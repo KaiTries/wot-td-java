@@ -6,6 +6,8 @@ import ch.unisg.ics.interactions.wot.td.affordances.PropertyAffordance;
 import ch.unisg.ics.interactions.wot.td.io.InvalidTDException;
 import ch.unisg.ics.interactions.wot.td.security.SecurityScheme;
 import ch.unisg.ics.interactions.wot.td.vocabularies.WoTSec;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -23,6 +25,7 @@ import java.util.stream.Collectors;
  * The current version does not yet implement all the core vocabulary terms defined by the
  * W3C Recommendation.
  */
+
 public class ThingDescription {
   private final String title;
   private final Set<SecurityScheme> security;
@@ -37,6 +40,32 @@ public class ThingDescription {
   private final List<EventAffordance> events;
 
   private final Optional<Model> graph;
+
+
+  @JsonCreator
+  public ThingDescription(
+      @JsonProperty("title") String title,
+      @JsonProperty("security") Set<SecurityScheme> security,
+      @JsonProperty("securityDefinitions") HashMap<String, SecurityScheme> securityDefinitions,
+      @JsonProperty("uri") Optional<String> uri,
+      @JsonProperty("types") Set<String> types,
+      @JsonProperty("baseURI") Optional<String> baseURI,
+      @JsonProperty("properties") List<PropertyAffordance> properties,
+      @JsonProperty("actions") List<ActionAffordance> actions,
+      @JsonProperty("events") List<EventAffordance> events,
+      @JsonProperty("graph") Optional<Model> graph
+  ) {
+    this.title = title;
+    this.security = security;
+    this.securityDefinitions = securityDefinitions;
+    this.uri = uri;
+    this.types = types;
+    this.baseURI = baseURI;
+    this.properties = properties;
+    this.actions = actions;
+    this.events = events;
+    this.graph = graph;
+  }
 
   protected ThingDescription(String title, Set<SecurityScheme> security, Map<String,
     SecurityScheme> securityDefinitions, Optional<String> uri, Set<String> types, Optional<String> baseURI,
