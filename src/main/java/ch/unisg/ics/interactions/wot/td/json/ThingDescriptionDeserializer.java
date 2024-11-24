@@ -140,7 +140,16 @@ public class ThingDescriptionDeserializer extends JsonDeserializer<ThingDescript
   private Set<String> getSecurity(final Map<String, SecurityScheme> securityDefinitions,
                                   final JsonNode securityNode) {
     Set<String> securitySchemes = new HashSet<>();
-    if (securityNode != null && securityNode.isTextual()) {
+    System.out.println(securityNode);
+    if (securityNode.isArray()) {
+      for (JsonNode element : securityNode) {
+        final JsonNode nameValueNode = element.get("@value");
+        if (nameValueNode != null) {
+          securitySchemes.add(nameValueNode.textValue());
+        }
+      }
+    }
+    if (securityNode.isTextual()) {
       String securityKey = securityNode.asText();
       SecurityScheme resolvedScheme = securityDefinitions.get(securityKey);
       if (resolvedScheme != null) {

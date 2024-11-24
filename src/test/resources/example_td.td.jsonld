@@ -4,6 +4,7 @@
     "@type": "Thing",
     "title": "Philips Hue Lamp",
     "description": "A Philips Hue lamp that can be controlled via the Hue Bridge",
+    "security": "basic_sc",
     "securityDefinitions": {
         "basic_sc": {
             "scheme": "apikey",
@@ -11,7 +12,6 @@
             "name": "hue-application-key"
         }
     },
-    "security": "basic_sc",
     "base": "https://192.168.1.101/clip/v2/resource/light/5dc4b482-e6e4-4f0b-9783-f85a1432c845",
     "properties": {
         "lightInformation": {

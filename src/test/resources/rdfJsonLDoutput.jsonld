@@ -1,0 +1,479 @@
+[
+  {
+    "@id": "http://localhost:8080/",
+    "@graph": [
+      {
+        "@id": "http://localhost:8080/#platform",
+        "@type": [
+          "https://www.w3.org/2019/wot/td#Thing",
+          "https://purl.org/hmas/HypermediaMASPlatform"
+        ],
+        "https://www.w3.org/2019/wot/td#title": [
+          {
+            "@value": "Yggdrasil Node"
+          }
+        ],
+        "https://www.w3.org/2019/wot/td#hasSecurityConfiguration": [
+          {
+            "@id": "_:d36a41de95ab49ad8097d320a0a809ac25"
+          }
+        ],
+        "https://www.w3.org/2019/wot/td#hasActionAffordance": [
+          {
+            "@id": "_:d36a41de95ab49ad8097d320a0a809ac26"
+          },
+          {
+            "@id": "_:d36a41de95ab49ad8097d320a0a809ac28"
+          },
+          {
+            "@id": "_:d36a41de95ab49ad8097d320a0a809ac30"
+          },
+          {
+            "@id": "_:d36a41de95ab49ad8097d320a0a809ac32"
+          },
+          {
+            "@id": "_:d36a41de95ab49ad8097d320a0a809ac34"
+          },
+          {
+            "@id": "_:d36a41de95ab49ad8097d320a0a809ac36"
+          },
+          {
+            "@id": "_:d36a41de95ab49ad8097d320a0a809ac42"
+          }
+        ],
+        "https://purl.org/hmas/hosts": [
+          {
+            "@id": "http://localhost:8080/workspaces/w1/#workspace"
+          }
+        ]
+      },
+      {
+        "@id": "_:d36a41de95ab49ad8097d320a0a809ac25",
+        "@type": [
+          "https://www.w3.org/2019/wot/security#NoSecurityScheme"
+        ]
+      },
+      {
+        "@id": "_:d36a41de95ab49ad8097d320a0a809ac26",
+        "@type": [
+          "https://www.w3.org/2019/wot/td#ActionAffordance",
+          "https://purl.org/hmas/jacamo/makeWorkspace"
+        ],
+        "https://www.w3.org/2019/wot/td#name": [
+          {
+            "@value": "createWorkspaceJson"
+          }
+        ],
+        "https://www.w3.org/2019/wot/td#hasForm": [
+          {
+            "@id": "_:d36a41de95ab49ad8097d320a0a809ac27"
+          }
+        ]
+      },
+      {
+        "@id": "_:d36a41de95ab49ad8097d320a0a809ac27",
+        "http://www.w3.org/2011/http#methodName": [
+          {
+            "@value": "POST"
+          }
+        ],
+        "https://www.w3.org/2019/wot/hypermedia#hasTarget": [
+          {
+            "@id": "http://localhost:8080/workspaces/"
+          }
+        ],
+        "https://www.w3.org/2019/wot/hypermedia#forContentType": [
+          {
+            "@value": "application/json"
+          }
+        ],
+        "https://www.w3.org/2019/wot/hypermedia#hasOperationType": [
+          {
+            "@id": "https://www.w3.org/2019/wot/td#invokeAction"
+          }
+        ]
+      },
+      {
+        "@id": "_:d36a41de95ab49ad8097d320a0a809ac28",
+        "@type": [
+          "https://www.w3.org/2019/wot/td#ActionAffordance",
+          "https://purl.org/hmas/jacamo/createWorkspace"
+        ],
+        "https://www.w3.org/2019/wot/td#name": [
+          {
+            "@value": "createWorkspaceTurtle"
+          }
+        ],
+        "https://www.w3.org/2019/wot/td#hasForm": [
+          {
+            "@id": "_:d36a41de95ab49ad8097d320a0a809ac29"
+          }
+        ]
+      },
+      {
+        "@id": "_:d36a41de95ab49ad8097d320a0a809ac29",
+        "http://www.w3.org/2011/http#methodName": [
+          {
+            "@value": "POST"
+          }
+        ],
+        "https://www.w3.org/2019/wot/hypermedia#hasTarget": [
+          {
+            "@id": "http://localhost:8080/workspaces/"
+          }
+        ],
+        "https://www.w3.org/2019/wot/hypermedia#forContentType": [
+          {
+            "@value": "text/turtle"
+          }
+        ],
+        "https://www.w3.org/2019/wot/hypermedia#hasOperationType": [
+          {
+            "@id": "https://www.w3.org/2019/wot/td#invokeAction"
+          }
+        ]
+      },
+      {
+        "@id": "_:d36a41de95ab49ad8097d320a0a809ac30",
+        "@type": [
+          "https://www.w3.org/2019/wot/td#ActionAffordance",
+          "https://purl.org/hmas/jacamo/sparqlGetQuery"
+        ],
+        "https://www.w3.org/2019/wot/td#name": [
+          {
+            "@value": "sparqlGetQuery"
+          }
+        ],
+        "https://www.w3.org/2019/wot/td#hasForm": [
+          {
+            "@id": "_:d36a41de95ab49ad8097d320a0a809ac31"
+          }
+        ]
+      },
+      {
+        "@id": "_:d36a41de95ab49ad8097d320a0a809ac31",
+        "http://www.w3.org/2011/http#methodName": [
+          {
+            "@value": "GET"
+          }
+        ],
+        "https://www.w3.org/2019/wot/hypermedia#hasTarget": [
+          {
+            "@id": "http://localhost:8080/query/"
+          }
+        ],
+        "https://www.w3.org/2019/wot/hypermedia#forContentType": [
+          {
+            "@value": "application/sparql-query"
+          }
+        ],
+        "https://www.w3.org/2019/wot/hypermedia#hasOperationType": [
+          {
+            "@id": "https://www.w3.org/2019/wot/td#invokeAction"
+          }
+        ]
+      },
+      {
+        "@id": "_:d36a41de95ab49ad8097d320a0a809ac32",
+        "@type": [
+          "https://www.w3.org/2019/wot/td#ActionAffordance",
+          "https://purl.org/hmas/jacamo/sparqlPostQuery"
+        ],
+        "https://www.w3.org/2019/wot/td#name": [
+          {
+            "@value": "sparqlPostQuery"
+          }
+        ],
+        "https://www.w3.org/2019/wot/td#hasForm": [
+          {
+            "@id": "_:d36a41de95ab49ad8097d320a0a809ac33"
+          }
+        ]
+      },
+      {
+        "@id": "_:d36a41de95ab49ad8097d320a0a809ac33",
+        "http://www.w3.org/2011/http#methodName": [
+          {
+            "@value": "POST"
+          }
+        ],
+        "https://www.w3.org/2019/wot/hypermedia#hasTarget": [
+          {
+            "@id": "http://localhost:8080/query/"
+          }
+        ],
+        "https://www.w3.org/2019/wot/hypermedia#forContentType": [
+          {
+            "@value": "application/sparql-query"
+          }
+        ],
+        "https://www.w3.org/2019/wot/hypermedia#hasOperationType": [
+          {
+            "@id": "https://www.w3.org/2019/wot/td#invokeAction"
+          }
+        ]
+      },
+      {
+        "@id": "_:d36a41de95ab49ad8097d320a0a809ac34",
+        "@type": [
+          "https://www.w3.org/2019/wot/td#ActionAffordance"
+        ],
+        "https://www.w3.org/2019/wot/td#name": [
+          {
+            "@value": "subscribeToWorkspaces"
+          }
+        ],
+        "https://www.w3.org/2019/wot/td#hasForm": [
+          {
+            "@id": "_:d36a41de95ab49ad8097d320a0a809ac35"
+          }
+        ]
+      },
+      {
+        "@id": "_:d36a41de95ab49ad8097d320a0a809ac35",
+        "http://www.w3.org/2011/http#methodName": [
+          {
+            "@value": "GET"
+          }
+        ],
+        "https://www.w3.org/2019/wot/hypermedia#hasTarget": [
+          {
+            "@id": "http://localhost:8080/workspaces/"
+          }
+        ],
+        "https://www.w3.org/2019/wot/hypermedia#forContentType": [
+          {
+            "@value": "application/json"
+          }
+        ],
+        "https://www.w3.org/2019/wot/hypermedia#hasOperationType": [
+          {
+            "@id": "https://www.w3.org/2019/wot/td#invokeAction"
+          }
+        ],
+        "https://www.w3.org/2019/wot/hypermedia#forSubProtocol": [
+          {
+            "@value": "websub"
+          }
+        ]
+      },
+      {
+        "@id": "_:d36a41de95ab49ad8097d320a0a809ac36",
+        "@type": [
+          "https://www.w3.org/2019/wot/td#ActionAffordance",
+          "https://purl.org/hmas/websub/subscribeToPlatform"
+        ],
+        "https://www.w3.org/2019/wot/td#name": [
+          {
+            "@value": "subscribeToPlatform"
+          }
+        ],
+        "https://www.w3.org/2019/wot/td#hasForm": [
+          {
+            "@id": "_:d36a41de95ab49ad8097d320a0a809ac37"
+          }
+        ],
+        "https://www.w3.org/2019/wot/td#hasInputSchema": [
+          {
+            "@id": "_:d36a41de95ab49ad8097d320a0a809ac38"
+          }
+        ]
+      },
+      {
+        "@id": "_:d36a41de95ab49ad8097d320a0a809ac37",
+        "http://www.w3.org/2011/http#methodName": [
+          {
+            "@value": "POST"
+          }
+        ],
+        "https://www.w3.org/2019/wot/hypermedia#hasTarget": [
+          {
+            "@id": "http://localhost:8080/hub/"
+          }
+        ],
+        "https://www.w3.org/2019/wot/hypermedia#forContentType": [
+          {
+            "@value": "application/json"
+          }
+        ],
+        "https://www.w3.org/2019/wot/hypermedia#hasOperationType": [
+          {
+            "@id": "https://www.w3.org/2019/wot/td#invokeAction"
+          }
+        ],
+        "https://www.w3.org/2019/wot/hypermedia#forSubProtocol": [
+          {
+            "@value": "websub"
+          }
+        ]
+      },
+      {
+        "@id": "_:d36a41de95ab49ad8097d320a0a809ac38",
+        "@type": [
+          "https://www.w3.org/2019/wot/json-schema#ObjectSchema"
+        ],
+        "https://www.w3.org/2019/wot/json-schema#properties": [
+          {
+            "@id": "_:d36a41de95ab49ad8097d320a0a809ac39"
+          },
+          {
+            "@id": "_:d36a41de95ab49ad8097d320a0a809ac40"
+          },
+          {
+            "@id": "_:d36a41de95ab49ad8097d320a0a809ac41"
+          }
+        ]
+      },
+      {
+        "@id": "_:d36a41de95ab49ad8097d320a0a809ac39",
+        "@type": [
+          "https://www.w3.org/2019/wot/json-schema#StringSchema"
+        ],
+        "https://www.w3.org/2019/wot/json-schema#propertyName": [
+          {
+            "@value": "mode"
+          }
+        ]
+      },
+      {
+        "@id": "_:d36a41de95ab49ad8097d320a0a809ac40",
+        "@type": [
+          "https://www.w3.org/2019/wot/json-schema#StringSchema"
+        ],
+        "https://www.w3.org/2019/wot/json-schema#propertyName": [
+          {
+            "@value": "topic"
+          }
+        ]
+      },
+      {
+        "@id": "_:d36a41de95ab49ad8097d320a0a809ac41",
+        "@type": [
+          "https://www.w3.org/2019/wot/json-schema#StringSchema"
+        ],
+        "https://www.w3.org/2019/wot/json-schema#propertyName": [
+          {
+            "@value": "callbackIri"
+          }
+        ]
+      },
+      {
+        "@id": "_:d36a41de95ab49ad8097d320a0a809ac42",
+        "@type": [
+          "https://www.w3.org/2019/wot/td#ActionAffordance",
+          "https://purl.org/hmas/websub/unsubscribeFromPlatform"
+        ],
+        "https://www.w3.org/2019/wot/td#name": [
+          {
+            "@value": "unsubscribeFromPlatform"
+          }
+        ],
+        "https://www.w3.org/2019/wot/td#hasForm": [
+          {
+            "@id": "_:d36a41de95ab49ad8097d320a0a809ac43"
+          }
+        ],
+        "https://www.w3.org/2019/wot/td#hasInputSchema": [
+          {
+            "@id": "_:d36a41de95ab49ad8097d320a0a809ac44"
+          }
+        ]
+      },
+      {
+        "@id": "_:d36a41de95ab49ad8097d320a0a809ac43",
+        "http://www.w3.org/2011/http#methodName": [
+          {
+            "@value": "POST"
+          }
+        ],
+        "https://www.w3.org/2019/wot/hypermedia#hasTarget": [
+          {
+            "@id": "http://localhost:8080/hub/"
+          }
+        ],
+        "https://www.w3.org/2019/wot/hypermedia#forContentType": [
+          {
+            "@value": "application/json"
+          }
+        ],
+        "https://www.w3.org/2019/wot/hypermedia#hasOperationType": [
+          {
+            "@id": "https://www.w3.org/2019/wot/td#invokeAction"
+          }
+        ],
+        "https://www.w3.org/2019/wot/hypermedia#forSubProtocol": [
+          {
+            "@value": "websub"
+          }
+        ]
+      },
+      {
+        "@id": "_:d36a41de95ab49ad8097d320a0a809ac44",
+        "@type": [
+          "https://www.w3.org/2019/wot/json-schema#ObjectSchema"
+        ],
+        "https://www.w3.org/2019/wot/json-schema#properties": [
+          {
+            "@id": "_:d36a41de95ab49ad8097d320a0a809ac45"
+          },
+          {
+            "@id": "_:d36a41de95ab49ad8097d320a0a809ac46"
+          },
+          {
+            "@id": "_:d36a41de95ab49ad8097d320a0a809ac47"
+          }
+        ]
+      },
+      {
+        "@id": "_:d36a41de95ab49ad8097d320a0a809ac45",
+        "@type": [
+          "https://www.w3.org/2019/wot/json-schema#StringSchema"
+        ],
+        "https://www.w3.org/2019/wot/json-schema#propertyName": [
+          {
+            "@value": "mode"
+          }
+        ]
+      },
+      {
+        "@id": "_:d36a41de95ab49ad8097d320a0a809ac46",
+        "@type": [
+          "https://www.w3.org/2019/wot/json-schema#StringSchema"
+        ],
+        "https://www.w3.org/2019/wot/json-schema#propertyName": [
+          {
+            "@value": "topic"
+          }
+        ]
+      },
+      {
+        "@id": "_:d36a41de95ab49ad8097d320a0a809ac47",
+        "@type": [
+          "https://www.w3.org/2019/wot/json-schema#StringSchema"
+        ],
+        "https://www.w3.org/2019/wot/json-schema#propertyName": [
+          {
+            "@value": "callbackIri"
+          }
+        ]
+      },
+      {
+        "@id": "http://localhost:8080/",
+        "@type": [
+          "https://purl.org/hmas/ResourceProfile"
+        ],
+        "https://purl.org/hmas/isProfileOf": [
+          {
+            "@id": "http://localhost:8080/#platform"
+          }
+        ]
+      },
+      {
+        "@id": "http://localhost:8080/workspaces/w1/#workspace",
+        "@type": [
+          "https://purl.org/hmas/Workspace"
+        ]
+      }
+    ]
+  }
+]

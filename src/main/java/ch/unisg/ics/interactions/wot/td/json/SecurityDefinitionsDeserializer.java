@@ -23,35 +23,34 @@ public class SecurityDefinitionsDeserializer extends JsonDeserializer<Map<String
 
     Map<String, SecurityScheme> securityDefinitions = new HashMap<>();
     if (securityDefinitionsNode != null) {
-      for (Iterator<Map.Entry<String, JsonNode>> it = securityDefinitionsNode.fields(); it.hasNext(); ) {
-        Map.Entry<String, JsonNode> entry = it.next();
-        String key = entry.getKey();
-
-        JsonNode value = entry.getValue();
-        String schemeType = value.get("scheme").asText();
+      for (JsonNode element : securityDefinitionsNode) {
+        final var schemeType = element.get("@type").get(0).asText();
+        final var in =  element.get(WoTSec.in).get(0).get("@value").asText();
+        final var name = element.get(WoTSec.name).get(0).get("@value").asText();
+        final var instanceName = element.get("https://www.w3" +
+                ".org/2019/wot/td#hasInstanceConfiguration").get(0).get("@id").asText();
 
         SecurityScheme scheme;
         switch (schemeType) {
-          case "apikey":
+          case WoTSec.APIKeySecurityScheme:
             Map<String, Object> config = new HashMap<>();
-            if (value.has("in")) {
-              String inValue = value.get("in").asText();
+            if (!in.isEmpty()) {
               TokenBasedSecurityScheme.TokenLocation tokenLocation =
-                  TokenBasedSecurityScheme.TokenLocation.fromString(inValue);
+                  TokenBasedSecurityScheme.TokenLocation.fromString(in);
               config.put(WoTSec.in, tokenLocation);
             }
-            if (value.has("name")) {
-              config.put(WoTSec.name, value.get("name").asText());
+            if (!name.isEmpty()) {
+              config.put(WoTSec.name, name);
             }
             scheme = new APIKeySecurityScheme(config);
             break;
-          case "nosec":
+          case WoTSec.NoSecurityScheme:
             scheme = SecurityScheme.getNoSecurityScheme();
             break;
           default:
             throw new IllegalArgumentException("Unknown security scheme type: " + schemeType);
         }
-        securityDefinitions.put(key, scheme);
+        securityDefinitions.put("basic_sc", scheme);
       }
     }
 
