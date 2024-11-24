@@ -78,7 +78,7 @@ public class TDGraphReader {
         .events(reader.readEvents());
 
     Optional<String> thingURI = reader.getThingURI();
-    thingURI.ifPresent(tdBuilder::uri);
+    thingURI.ifPresent(tdBuilder::id);
 
     Optional<String> base = reader.readBaseURI();
     base.ifPresent(tdBuilder::baseURI);
@@ -159,7 +159,7 @@ public class TDGraphReader {
       rdf.createIRI(TD.definesSecurityScheme), null));
 
     if (schemeIds.isEmpty()) {
-      throw new InvalidTDException("Missing mandatory security configuration.");
+      return Map.of();
     }
 
     Map<String, SecurityScheme> schemes = new HashMap<String, SecurityScheme>();
@@ -206,7 +206,16 @@ public class TDGraphReader {
     final var schemeId = Models.objectLiteral(model.filter(thingId,
         iri(TD.hasSecurityConfiguration), null));
     final var s = new HashSet<String>();
-    s.add(schemeId.get().stringValue());
+
+    final var schemeIdListPointer = Models.objectResource(model.filter(thingId,
+        iri(TD.hasSecurityConfiguration), null));
+
+    if (schemeIdListPointer.isPresent()) {
+      final var t = Models.objectResource(model.filter(schemeIdListPointer.get(), null, null));
+      t.ifPresent(v -> s.add(v.stringValue()));
+    }
+
+    schemeId.ifPresent(literal -> s.add(literal.stringValue()));
     return s;
   }
 

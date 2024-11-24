@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NonNull;
 import org.eclipse.rdf4j.model.Model;
 
 import java.util.*;
@@ -39,6 +40,7 @@ public class ThingDescription {
   // id
   private final String id;
   // title
+  @NonNull
   private final String title;
 
   // TODO: Add multiple titles support
@@ -47,12 +49,14 @@ public class ThingDescription {
   private final String description;
 
   // security
-  private final Set<String> security;
+  @Builder.Default
+  private final Set<String> security =
+      Set.of("nosec");
 
   // securityDefinitions
-  private final Map<String, SecurityScheme> securityDefinitions;
-
-  private final String uri;
+  @Builder.Default
+  private final Map<String, SecurityScheme> securityDefinitions =
+      Map.of("nosec", SecurityScheme.getNoSecurityScheme());
 
   private final String baseURI;
 
@@ -74,7 +78,6 @@ public class ThingDescription {
       @JsonProperty("description") String description,
       @JsonProperty("security") Set<String> security,
       @JsonProperty("securityDefinitions") Map<String, SecurityScheme> securityDefinitions,
-      @JsonProperty("uri") String uri,
       @JsonProperty("type") Set<String> types,
       @JsonProperty("baseURI") String baseURI,
       @JsonProperty("properties") List<PropertyAffordance> properties,
@@ -105,7 +108,6 @@ public class ThingDescription {
       }
     }
 
-    this.uri = uri;
     this.type = types;
     this.baseURI = baseURI;
 

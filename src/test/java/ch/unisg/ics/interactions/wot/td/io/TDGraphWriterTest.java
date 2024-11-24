@@ -54,11 +54,13 @@ public class TDGraphWriterTest {
         "\n" +
         "[] a td:Thing ;\n" +
         "    td:title \"My Thing\" ;\n" +
-        "    td:hasSecurityConfiguration [ a wotsec:NoSecurityScheme ] .\n";
+            "    td:definesSecurityScheme [ a \"nosec\"; \n" +
+            "       wotsec:scheme wotsec:NoSecurityScheme\n" +
+            "    ];\n" +
+            "    td:hasSecurityConfiguration \"nosec\" .\n" ;
 
     ThingDescription td = ThingDescription.builder()
         .title(THING_TITLE)
-        .securityDefinitions(Map.of("nosec_sc", SecurityScheme.getNoSecurityScheme()))
         .build();
 
     assertIsomorphicGraphs(testTD, td);
@@ -69,12 +71,14 @@ public class TDGraphWriterTest {
     String testTD = PREFIXES +
         "<http://example.org/#thing> a td:Thing ;\n" +
         "    td:title \"My Thing\" ;\n" +
-        "    td:hasSecurityConfiguration [ a wotsec:NoSecurityScheme ] .\n" ;
+        "    td:definesSecurityScheme [ a \"nosec\"; \n" +
+        "       wotsec:scheme wotsec:NoSecurityScheme\n" +
+        "    ];\n" +
+        "    td:hasSecurityConfiguration \"nosec\" .\n" ;
 
     ThingDescription td = ThingDescription.builder()
         .title(THING_TITLE)
-        .uri(THING_IRI)
-        .securityDefinitions(Map.of("nosec_sc", SecurityScheme.getNoSecurityScheme()))
+        .id(THING_IRI)
         .build();
 
     assertIsomorphicGraphs(testTD, td);
@@ -86,28 +90,33 @@ public class TDGraphWriterTest {
     String testTD = PREFIXES +
       "<http://example.org/#thing> a td:Thing ;\n" +
       "    td:title \"My Thing\" ;\n" +
-      "    td:hasSecurityConfiguration [ a wotsec:APIKeySecurityScheme, ex:Type ;\n" +
+      "    td:definesSecurityScheme [ a \"apikey_sc\";\n" +
+      "        wotsec:scheme wotsec:APIKeySecurityScheme; \n" +
       "        wotsec:in \"header\" ;\n" +
       "        wotsec:name \"X-API-Key\" ;\n" +
-      "    ] .\n";
+      "    ] ;\n" +
+      "    td:hasSecurityConfiguration \"apikey_sc\" . ";
 
     ThingDescription tdSimple = ThingDescription.builder()
           .title(THING_TITLE)
-          .uri(THING_IRI)
+          .id(THING_IRI)
           .securityDefinitions(Map.of("apikey_sc", new APIKeySecurityScheme.Builder()
               .addSemanticType("https://example.org#Type")
               .addToken(TokenLocation.HEADER, "X-API-Key").build())
           )
+        .security(Set.of("apikey_sc"))
       .build();
 
     ThingDescription tdVerbose = ThingDescription.builder()
         .title(THING_TITLE)
-      .uri(THING_IRI)
+      .id(THING_IRI)
       .securityDefinitions(Map.of("apikey_sc", new APIKeySecurityScheme.Builder()
         .addSemanticType("https://example.org#Type")
         .addTokenLocation(TokenLocation.HEADER)
         .addTokenName("X-API-Key").build()))
+        .security(Set.of("apikey_sc"))
       .build();
+
 
     assertIsomorphicGraphs(testTD, tdSimple);
     assertIsomorphicGraphs(testTD, tdVerbose);
@@ -119,17 +128,20 @@ public class TDGraphWriterTest {
     String testTD = PREFIXES +
       "<http://example.org/#thing> a td:Thing ;\n" +
       "    td:title \"My Thing\" ;\n" +
-      "    td:hasSecurityConfiguration [ a wotsec:BasicSecurityScheme, ex:Type ;\n" +
+      "    td:definesSecurityScheme [ a \"basic_sc\" ;\n" +
+      "        wotsec:scheme wotsec:BasicSecurityScheme; \n" +
       "        wotsec:in \"header\" ;\n" +
       "        wotsec:name \"Authorization\" ;\n" +
-      "    ] .\n";
+      "    ] ;\n" +
+      "    td:hasSecurityConfiguration \"basic_sc\" .";
 
     ThingDescription td = ThingDescription.builder()
         .title(THING_TITLE)
-      .uri(THING_IRI)
+      .id(THING_IRI)
       .securityDefinitions(Map.of("basic_sc", new BasicSecurityScheme.Builder()
         .addSemanticType("https://example.org#Type")
         .addToken(TokenLocation.HEADER, "Authorization").build()))
+        .security(Set.of("basic_sc"))
       .build();
 
     assertIsomorphicGraphs(testTD, td);
@@ -141,20 +153,23 @@ public class TDGraphWriterTest {
     String testTD = PREFIXES +
       "<http://example.org/#thing> a td:Thing ;\n" +
       "    td:title \"My Thing\" ;\n" +
-      "    td:hasSecurityConfiguration [ a wotsec:DigestSecurityScheme, ex:Type ;\n" +
+      "    td:definesSecurityScheme [ a \"digest_sc\" ;\n" +
+      "        wotsec:scheme wotsec:DigestSecurityScheme ; \n"  +
       "        wotsec:in \"header\" ;\n" +
       "        wotsec:name \"nonce\" ;\n" +
       "        wotsec:qop \"auth-int\" ;\n" +
-      "    ] .\n";
+      "    ];\n" +
+      "    td:hasSecurityConfiguration \"digest_sc\" .";
 
     ThingDescription td = ThingDescription.builder()
         .title(THING_TITLE)
-      .uri(THING_IRI)
+      .id(THING_IRI)
       .securityDefinitions(Map.of("digest_sc", new DigestSecurityScheme.Builder()
         .addSemanticType("https://example.org#Type")
         .addToken(TokenLocation.HEADER, "nonce")
         .addQoP(DigestSecurityScheme.QualityOfProtection.AUTH_INT)
         .build()))
+        .security(Set.of("digest_sc"))
       .build();
 
     assertIsomorphicGraphs(testTD, td);
@@ -166,17 +181,19 @@ public class TDGraphWriterTest {
     String testTD = PREFIXES +
       "<http://example.org/#thing> a td:Thing ;\n" +
       "    td:title \"My Thing\" ;\n" +
-      "    td:hasSecurityConfiguration [ a wotsec:BearerSecurityScheme, ex:Type ;\n" +
+      "    td:definesSecurityScheme [ a \"bearer_sc\" ;\n" +
+      "        wotsec:scheme wotsec:BearerSecurityScheme; \n" +
       "        wotsec:in \"header\" ;\n" +
       "        wotsec:name \"Authorization\" ;\n" +
       "        wotsec:authorization <http://server.example.com> ;\n" +
       "        wotsec:alg \"ECDSA 256\" ;\n" +
       "        wotsec:format \"cwt\" ;\n" +
-      "    ] .\n";
+      "    ] ;\n" +
+      "   td:hasSecurityConfiguration \"bearer_sc\" . ";
 
     ThingDescription td = ThingDescription.builder()
         .title(THING_TITLE)
-      .uri(THING_IRI)
+      .id(THING_IRI)
       .securityDefinitions(Map.of("bearer_sc", new BearerSecurityScheme.Builder()
         .addSemanticType("https://example.org#Type")
         .addToken(TokenLocation.HEADER, "Authorization")
@@ -184,6 +201,7 @@ public class TDGraphWriterTest {
         .addAlg("ECDSA 256")
         .addFormat("cwt")
         .build()))
+        .security(Set.of("bearer_sc"))
       .build();
 
     assertIsomorphicGraphs(testTD, td);
@@ -193,7 +211,7 @@ public class TDGraphWriterTest {
   public void testWriteBearerSecuritySchemeInvalidAuth() throws RDFParseException, RDFHandlerException, IOException {
     ThingDescription td = ThingDescription.builder()
         .title(THING_TITLE)
-      .uri(THING_IRI)
+      .id(THING_IRI)
       .securityDefinitions(Map.of("bearer_sc", new BearerSecurityScheme.Builder()
         .addAuthorization("invalidIRI")
         .build()))
@@ -1076,7 +1094,7 @@ public class TDGraphWriterTest {
       List<ActionAffordance> actions) {
      var builder = ThingDescription.builder()
          .title(THING_TITLE)
-        .uri(THING_IRI)
+        .id(THING_IRI)
         .baseURI("http://example.org/")
         .securityDefinitions(Map.of("nosec_sc", SecurityScheme.getNoSecurityScheme()))
          .properties(properties)

@@ -77,8 +77,6 @@ public class ThingDescriptionDeserializer extends JsonDeserializer<ThingDescript
     // Deserialize Base
     String base = getTextNode(rootNode, TD.baseUri);
 
-    // TODO: should be removed? id is correct
-    String uri = id; //getTextNode(rootNode, "uri");
 
     // Deserialize Properties
     JsonNode propertiesNode = rootNode.get(TD.hasPropertyAffordance);
@@ -121,7 +119,6 @@ public class ThingDescriptionDeserializer extends JsonDeserializer<ThingDescript
         description,
         securitySchemes,
         securityDefinitions,
-        uri,
         types, // types
         base,
         properties, // properties

@@ -1516,10 +1516,11 @@ public class TDGraphReaderTest {
 
     // Check metadata
     assertEquals("My Thing", td.getTitle());
-    assertEquals("http://example.org/#thing", td.getUri());
+    assertEquals("http://example.org/#thing", td.getId());
     assertEquals(1, td.getType().size());
     assertTrue(td.getType().contains("https://www.w3.org/2019/wot/td#Thing"));
-    assertTrue(td.getSecurityDefinitions().keySet().stream().anyMatch(scheme -> scheme
+
+    assertTrue(td.getSecurity().stream().anyMatch(scheme -> scheme
       .contains(WoTSec.NoSecurityScheme)));
     assertEquals(1, td.getActions().size());
 

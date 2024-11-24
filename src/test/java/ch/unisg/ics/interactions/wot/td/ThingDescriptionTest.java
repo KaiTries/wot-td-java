@@ -5,6 +5,7 @@ import ch.unisg.ics.interactions.wot.td.affordances.EventAffordance;
 import ch.unisg.ics.interactions.wot.td.affordances.Form;
 import ch.unisg.ics.interactions.wot.td.affordances.PropertyAffordance;
 import ch.unisg.ics.interactions.wot.td.io.InvalidTDException;
+import ch.unisg.ics.interactions.wot.td.io.ReadWriteUtils;
 import ch.unisg.ics.interactions.wot.td.io.TDGraphReader;
 import ch.unisg.ics.interactions.wot.td.io.TDGraphWriter;
 import ch.unisg.ics.interactions.wot.td.json.ContextDeserializer;
@@ -121,8 +122,6 @@ public class ThingDescriptionTest {
   public void testOutputJson() throws JsonProcessingException {
     final var o = new ObjectMapper();
     o.registerModule(new Jdk8Module());
-    SimpleModule module = new SimpleModule();
-    o.registerModule(module);
     o.enable(SerializationFeature.INDENT_OUTPUT);
     o.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     String serialized = o.writeValueAsString(commonTd);
@@ -192,13 +191,36 @@ public class ThingDescriptionTest {
   }
 
   @Test
+  public void testPlatform() throws JsonProcessingException {
+    HttpInterfaceConfigImpl httpInterfaceConfig = new HttpInterfaceConfigImpl(
+        "localhost",
+        8080,
+        "localhost:8080"
+    );
+    WebSubConfigImpl webSubConfig = new WebSubConfigImpl(
+      false,
+        "localhost:8080/hub"
+    );
+
+    RepresentationFactoryTDImplt factoryTDImplt = new RepresentationFactoryTDImplt(
+        httpInterfaceConfig,
+        webSubConfig
+    );
+
+    final ThingDescription platform = factoryTDImplt.createPlatform();
+    final var s = ReadWriteUtils.tdToJsonLD(platform);
+    System.out.println(s);
+
+  }
+
+  @Test
   public void testTitle() {
     ThingDescription td = ThingDescription.builder().title("My Thing").build();
 
     assertEquals("My Thing", td.getTitle());
   }
 
-  @Test(expected = InvalidTDException.class)
+  @Test(expected = NullPointerException.class)
   public void testTitleNull() {
     ThingDescription.builder().title(null).build();
   }
@@ -207,10 +229,10 @@ public class ThingDescriptionTest {
   public void testURI() {
     ThingDescription td = ThingDescription.builder()
         .title("My Thing")
-        .uri("http://example.org/#thing")
+        .id("http://example.org/#thing")
         .build();
 
-    assertEquals("http://example.org/#thing", td.getUri());
+    assertEquals("http://example.org/#thing", td.getId());
   }
 
   @Test
@@ -241,7 +263,7 @@ public class ThingDescriptionTest {
   public void testBaseURI() {
     ThingDescription td = ThingDescription.builder()
         .title("My Thing")
-        .uri("http://example.org/#thing")
+        .id("http://example.org/#thing")
         .baseURI("http://example.org/")
         .build();
 

@@ -29,7 +29,7 @@ public class TDGraphWriter {
   private final ValueFactory rdf = SimpleValueFactory.getInstance();
 
   public TDGraphWriter(ThingDescription td) {
-    this.thingId = td.getUri() != null ? rdf.createIRI(td.getUri())
+    this.thingId = td.getId() != null ? rdf.createIRI(td.getId())
       : rdf.createBNode();
 
     this.td = td;
@@ -86,6 +86,8 @@ public class TDGraphWriter {
       graphBuilder.add(schemeId, RDF.TYPE, scheme);
 
       graphBuilder.add(schemeId, iri(WoTSec.SCHEME), iri(getSecurityDefinition(s.getScheme())));
+
+
       for (Map.Entry<String, Object> configurationEntry : configuration.entrySet()) {
         IRI confTypeIri = rdf.createIRI(configurationEntry.getKey());
         Object confValue = configurationEntry.getValue();
@@ -123,6 +125,9 @@ public class TDGraphWriter {
   private String getSecurityDefinition(final String scheme) {
     return switch (scheme) {
       case "apikey" -> WoTSec.APIKeySecurityScheme;
+      case "bearer" -> WoTSec.BearerSecurityScheme;
+      case "basic" -> WoTSec.BasicSecurityScheme;
+      case "digest" -> WoTSec.DigestSecurityScheme;
       default -> WoTSec.NoSecurityScheme;
     };
 
@@ -321,7 +326,7 @@ public class TDGraphWriter {
   }
 
   private String write(RDFFormat format) {
-    return ReadWriteUtils.writeToString(format, getModel());
+    return ReadWriteUtils.modelToString(getModel(), format, td.getBaseURI());
   }
 
   private String conversion(String str){
