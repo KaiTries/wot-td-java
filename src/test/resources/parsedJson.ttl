@@ -1,0 +1,188 @@
+@prefix td: <https://www.w3.org/2019/wot/td#> .
+@prefix wotsec: <https://www.w3.org/2019/wot/security#> .
+@prefix htv: <http://www.w3.org/2011/http#> .
+@prefix hctl: <https://www.w3.org/2019/wot/hypermedia#> .
+@prefix schema: <https://www.w3.org/2019/wot/json-schema#> .
+@prefix xml: <http://www.w3.org/2001/XMLSchema#> .
+@prefix hmas: <https://purl.org/hmas/> .
+
+<urn:dev:ops:32473-HueLight-2> a td:Thing;
+  td:baseURI "https://192.168.1.101/clip/v2/resource/light/5dc4b482-e6e4-4f0b-9783-f85a1432c845";
+  td:definesSecurityScheme [ a wotsec:APIKeySecurityScheme;
+      wotsec:in "header";
+      wotsec:name "hue-application-key"
+    ];
+  td:description "A Philips Hue lamp that can be controlled via the Hue Bridge"@en;
+  td:hasActionAffordance [
+      td:description "Set the state of the light. The state can be On/Off, brightness, color, and dynamics."@en;
+      td:hasForm [
+          htv:methodName "PUT";
+          hctl:forContentType "application/json";
+          hctl:hasOperationType td:invokeAction;
+          hctl:hasTarget ""^^xml:anyURI
+        ];
+      td:hasInputSchema [ a schema:ObjectSchema;
+          schema:properties [ a schema:ObjectSchema;
+              schema:properties [ a schema:BooleanSchema;
+                  schema:propertyName "on";
+                  td:description "On/Off state of the light. On=true, Off=false"@en
+                ];
+              schema:propertyName "on";
+              td:description "On/Off state of the light. On=true, Off=false"@en
+            ], [ a schema:ObjectSchema;
+              schema:properties [ a schema:NumberSchema;
+                  schema:maximum 100;
+                  schema:minimum 0;
+                  schema:propertyName "brightness";
+                  td:description "The brightness of the light. 0 is the minimum brightness and 100 is the maximum brightness"@en
+                ];
+              schema:propertyName "dimming";
+              td:description "The brightness of the light"@en
+            ], [ a schema:ObjectSchema;
+              schema:properties [ a schema:ObjectSchema;
+                  schema:properties [ a schema:NumberSchema;
+                      schema:maximum 1;
+                      schema:minimum 0;
+                      schema:propertyName "x";
+                      td:description "The x coordinate of the color in the CIE color space"@en
+                    ], [ a schema:NumberSchema;
+                      schema:maximum 1;
+                      schema:minimum 0;
+                      schema:propertyName "y";
+                      td:description "The y coordinate of the color in the CIE color space"@en
+                    ];
+                  schema:propertyName "xy";
+                  td:description "The x and y coordinates of the color in the CIE color space"@en
+                ];
+              schema:propertyName "color";
+              td:description "The color of the light"@en
+            ]
+        ];
+      td:hasOutputSchema [ a schema:ObjectSchema;
+          schema:properties [ a schema:ArraySchema;
+              schema:items [ a schema:ObjectSchema;
+                  schema:properties [ a schema:StringSchema;
+                      schema:propertyName "rid";
+                      td:description "The ID of the resource"@en
+                    ], [ a schema:StringSchema;
+                      schema:propertyName "rtype";
+                      td:description "The type of the resource"@en
+                    ]
+                ];
+              schema:propertyName "data"
+            ], [ a schema:ArraySchema;
+              schema:propertyName "errors"
+            ]
+        ];
+      td:name "setState";
+      td:title "Set the state of the light"@en
+    ];
+  td:hasPropertyAffordance [ a schema:ObjectSchema;
+      schema:properties [ a schema:ArraySchema;
+          schema:items [ a schema:ObjectSchema;
+              schema:properties [ a schema:StringSchema;
+                  schema:propertyName "id";
+                  td:description "The ID of the light"@en
+                ], [ a schema:StringSchema;
+                  schema:propertyName "id_v1";
+                  td:description "The ID of the light in version 1"@en
+                ], [ a schema:BooleanSchema;
+                  schema:propertyName "on";
+                  td:description "On/Off state of the light. On=true, Off=false"@en
+                ], [ a schema:ObjectSchema;
+                  schema:properties [ a schema:NumberSchema;
+                      schema:maximum 100;
+                      schema:minimum 0;
+                      schema:propertyName "brightness";
+                      td:description "The brightness of the light. 0 is the minimum brightness and 100 is the maximum brightness"@en
+                    ], [ a schema:NumberSchema;
+                      schema:propertyName "min_dim_level";
+                      td:description "The unit of the brightness"@en
+                    ];
+                  schema:propertyName "dimming";
+                  td:description "The brightness of the light"@en
+                ], [ a schema:ObjectSchema;
+                  schema:properties [ a schema:ObjectSchema;
+                      schema:properties [ a schema:NumberSchema;
+                          schema:propertyName "x";
+                          td:description "The x coordinate of the color in the CIE color space"@en
+                        ], [ a schema:NumberSchema;
+                          schema:propertyName "y";
+                          td:description "The y coordinate of the color in the CIE color space"@en
+                        ];
+                      schema:propertyName "xy";
+                      td:description "The x and y coordinates of the color in the CIE color space"@en
+                    ], [ a schema:ObjectSchema;
+                      schema:properties [ a schema:ObjectSchema;
+                          schema:properties [ a schema:NumberSchema;
+                              schema:propertyName "x";
+                              td:description "The x coordinate of the red color gamut in the CIE color space"@en
+                            ], [ a schema:NumberSchema;
+                              schema:propertyName "y";
+                              td:description "The y coordinate of the red color gamut in the CIE color space"@en
+                            ];
+                          schema:propertyName "red";
+                          td:description "The red color gamut of the light"@en
+                        ], [ a schema:ObjectSchema;
+                          schema:properties [ a schema:NumberSchema;
+                              schema:propertyName "x";
+                              td:description "The x coordinate of the green color gamut in the CIE color space"@en
+                            ], [ a schema:NumberSchema;
+                              schema:propertyName "y";
+                              td:description "The y coordinate of the green color gamut in the CIE color space"@en
+                            ];
+                          schema:propertyName "green";
+                          td:description "The green color gamut of the light"@en
+                        ], [ a schema:ObjectSchema;
+                          schema:properties [ a schema:NumberSchema;
+                              schema:propertyName "x";
+                              td:description "The x coordinate of the blue color gamut in the CIE color space"@en
+                            ], [ a schema:NumberSchema;
+                              schema:propertyName "y";
+                              td:description "The y coordinate of the blue color gamut in the CIE color space"@en
+                            ];
+                          schema:propertyName "blue";
+                          td:description "The blue color gamut of the light"@en
+                        ];
+                      schema:propertyName "gamut";
+                      td:description "The color gamut of the light"@en
+                    ], [ a schema:StringSchema;
+                      schema:propertyName "gamut_type";
+                      td:description "The type of the color gamut"@en
+                    ];
+                  schema:propertyName "color";
+                  td:description "The color of the light"@en
+                ], [ a schema:ObjectSchema;
+                  schema:properties [ a schema:StringSchema;
+                      schema:enum "none", "dynamic_palette";
+                      schema:propertyName "status";
+                      td:description "The status of the dynamics"@en
+                    ], [ a schema:NumberSchema;
+                      schema:propertyName "speed";
+                      td:description "The speed of the dynamics"@en
+                    ], [ a schema:BooleanSchema;
+                      schema:propertyName "speed_valid";
+                      td:description "The validity of the speed"@en
+                    ];
+                  schema:propertyName "dynamics";
+                  td:description "The dynamics of the light"@en
+                ], [ a schema:StringSchema;
+                  schema:propertyName "type";
+                  td:description "The type of the device"@en
+                ]
+            ];
+          td:name "data";
+          td:title "An Array that holds the object of the information"@en
+        ];
+      td:description "The current state and attributes of the light. There are more attributes that are not listed here and are not of importance."@en;
+      td:hasForm [
+          htv:methodName "GET";
+          hctl:forContentType "application/json";
+          hctl:hasOperationType td:readProperty;
+          hctl:hasTarget ""^^xml:anyURI
+        ];
+      td:name "lightInformation";
+      td:title "State and Attributes of the Light"@en
+    ];
+  td:hasSecurityConfiguration "basic_sc";
+  td:title "Philips Hue Lamp"@en .

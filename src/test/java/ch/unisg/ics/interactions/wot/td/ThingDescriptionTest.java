@@ -4,16 +4,9 @@ import ch.unisg.ics.interactions.wot.td.affordances.ActionAffordance;
 import ch.unisg.ics.interactions.wot.td.affordances.EventAffordance;
 import ch.unisg.ics.interactions.wot.td.affordances.Form;
 import ch.unisg.ics.interactions.wot.td.affordances.PropertyAffordance;
-import ch.unisg.ics.interactions.wot.td.io.InvalidTDException;
 import ch.unisg.ics.interactions.wot.td.io.ReadWriteUtils;
 import ch.unisg.ics.interactions.wot.td.io.TDGraphReader;
 import ch.unisg.ics.interactions.wot.td.io.TDGraphWriter;
-import ch.unisg.ics.interactions.wot.td.json.ContextDeserializer;
-import ch.unisg.ics.interactions.wot.td.json.JsonUtil;
-import ch.unisg.ics.interactions.wot.td.json.PropertiesDeserializer;
-import ch.unisg.ics.interactions.wot.td.json.SecurityDefinitionsDeserializer;
-import ch.unisg.ics.interactions.wot.td.json.ThingDescriptionDeserializer;
-import ch.unisg.ics.interactions.wot.td.json.TypeDeserializer;
 import ch.unisg.ics.interactions.wot.td.security.APIKeySecurityScheme;
 import ch.unisg.ics.interactions.wot.td.security.SecurityScheme;
 import ch.unisg.ics.interactions.wot.td.security.TokenBasedSecurityScheme;
@@ -28,36 +21,21 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.github.jsonldjava.impl.NQuadRDFParser;
-import jakarta.json.Json;
-import jakarta.json.JsonWriter;
-import jakarta.json.JsonWriterFactory;
-import jakarta.json.stream.JsonGenerator;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.rio.RDFFormat;
-import org.eclipse.rdf4j.rio.RioSetting;
-import org.eclipse.rdf4j.rio.helpers.JSONLDMode;
 import org.eclipse.rdf4j.rio.helpers.JSONLDSettings;
-import org.eclipse.rdf4j.rio.helpers.RioSettingImpl;
 import org.eclipse.rdf4j.rio.helpers.StatementCollector;
 import org.eclipse.rdf4j.rio.jsonld.JSONLDParser;
-import org.eclipse.rdf4j.rio.jsonld.JSONLDWriter;
-import org.eclipse.rdf4j.rio.jsonld.JSONLDWriterFactory;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -168,19 +146,19 @@ public class ThingDescriptionTest {
         StandardCharsets.UTF_8
     );
     final var inputJsonLdString = Files.readString(
-        Path.of(ClassLoader.getSystemResource("example_td.td.jsonld").toURI()),
+        Path.of(ClassLoader.getSystemResource("input.td.jsonld").toURI()),
         StandardCharsets.UTF_8
     );
 
     var j = JsonLd.toRdf("file:/Users/kaischultz/github/wot-td-java/src/test/resources" +
-            "/example_td.td.jsonld").get();
+        "/input.td.jsonld").get();
 
     //var t = JsonLd.frame("file:/Users/kaischultz/github/wot-td-java/src/test/resources" +
-    //    "/example_td.td.jsonld","");
+    //    "/input.td.jsonld","");
 
     JSONLDParser parser = new JSONLDParser();
     parser.set(JSONLDSettings.SECURE_MODE, false);
-    InputStream inputStream = new ByteArrayInputStream(inputJsonLdString.getBytes(StandardCharsets.UTF_8));
+    InputStream inputStream = new ByteArrayInputStream(inputJsonLdRdfString.getBytes(StandardCharsets.UTF_8));
     final var model = new LinkedHashModel();
     model.setNamespace("td", TD.PREFIX);
     model.setNamespace("wotsec", WoTSec.PREFIX);
@@ -192,10 +170,15 @@ public class ThingDescriptionTest {
     parser.setRDFHandler(new StatementCollector(model));
     parser.parse(inputStream);
 
-    final var please = ReadWriteUtils.modelToString(model, RDFFormat.TURTLE, "");
+    final var please = ReadWriteUtils.modelToString(model, RDFFormat.TURTLE, null);
+
+
+
+
+
 
     // System.out.println(please);
-
+    /*
     StringWriter w = new StringWriter();
 
     JSONLDWriter writer = (JSONLDWriter) new JSONLDWriterFactory().getWriter(w);
@@ -212,7 +195,7 @@ public class ThingDescriptionTest {
     writer.endRDF();
 
     System.out.println(w.toString());
-
+    */
 
 
     // var tJ = JsonUtil.prettyPrint(j);
