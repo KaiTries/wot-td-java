@@ -10,6 +10,8 @@ import ch.unisg.ics.interactions.wot.td.security.*;
 import ch.unisg.ics.interactions.wot.td.security.DigestSecurityScheme.QualityOfProtection;
 import ch.unisg.ics.interactions.wot.td.security.TokenBasedSecurityScheme.TokenLocation;
 import ch.unisg.ics.interactions.wot.td.vocabularies.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.hc.client5.http.fluent.Request;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -17,6 +19,7 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.rio.*;
+import org.eclipse.rdf4j.rio.helpers.JSONLDMode;
 import org.eclipse.rdf4j.rio.helpers.JSONLDSettings;
 import org.eclipse.rdf4j.rio.helpers.StatementCollector;
 
@@ -38,6 +41,7 @@ public class TDGraphReader {
   private static final String[] COAP_URI_SCHEMES = new String[]{"coap", "coaps"};
 
   private final Resource thingId;
+  private final String baseUri;
   private final ValueFactory rdf = SimpleValueFactory.getInstance();
   private Model model;
 
@@ -90,8 +94,13 @@ public class TDGraphReader {
     loadModel(format, representation, "");
 
     Optional<String> baseURI = readBaseURI();
-    baseURI.ifPresent(s -> loadModel(format, representation, s));
 
+    if (baseURI.isPresent()) {
+      loadModel(format, representation, baseURI.get());
+      this.baseUri = baseURI.get();
+    } else {
+      this.baseUri = null;
+    }
     try {
       thingId = Models.subject(model.filter(null, rdf.createIRI(TD.hasSecurityConfiguration),
           null)).get();
@@ -106,6 +115,9 @@ public class TDGraphReader {
     RDFParser parser = Rio.createParser(format);
     if (format.equals(RDFFormat.JSONLD)) {
       parser.set(JSONLDSettings.SECURE_MODE, false);
+      parser.set(JSONLDSettings.USE_RDF_TYPE,true);
+      parser.set(JSONLDSettings.OPTIMIZE, true);
+
     }
     parser.setRDFHandler(new StatementCollector(model));
     try (StringReader stringReader = conversion(representation, format)) {
@@ -143,7 +155,7 @@ public class TDGraphReader {
     Set<IRI> thingTypes = Models.objectIRIs(model.filter(thingId, RDF.TYPE, null));
 
     return thingTypes.stream()
-      .map(iri -> iri.stringValue())
+      .map(Value::stringValue)
       .collect(Collectors.toSet());
   }
 
@@ -206,6 +218,11 @@ public class TDGraphReader {
         Set<String> instanceName = instanceConfigIRI.stream()
             .map(Value::stringValue)
             .collect(Collectors.toSet());
+        if (instanceName.isEmpty()) {
+          var t = model.filter(schemeId,
+              iri(TD.hasInstanceConfiguration), null);
+          instanceName.add("nosec_sc");
+        }
 
         String securityName = instanceName.stream().findFirst().orElseThrow();
         schemes.put(securityName, scheme);
@@ -213,7 +230,6 @@ public class TDGraphReader {
         throw new InvalidTDException("Invalid security scheme configuration", e);
       }
     }
-
     return schemes;
   }
 
@@ -536,6 +552,28 @@ public class TDGraphReader {
     for (Resource formId : formIdSet) {
       Optional<IRI> targetOpt = Models.objectIRI(model.filter(formId, rdf.createIRI(HCTL.hasTarget),
           null));
+
+      if (targetOpt.isEmpty()) {
+        final var t = Models.objectLiteral(model.filter(formId, rdf.createIRI(HCTL.hasTarget),
+            null));
+        if (!t.isPresent()) {
+           continue;
+        }
+        final var lable = t.get().getLabel();
+        IRI targetIri;
+        try {
+          targetIri = iri(lable);
+        } catch (IllegalArgumentException e) {
+          if (baseUri != null) {
+            String encodedUrl = lable.replace("{", "%7B").replace("}", "%7D");
+            targetIri = iri(baseUri + encodedUrl);
+          } else {
+            System.out.println("no base uri and relative href");
+            throw e;
+          }
+        }
+        targetOpt = Optional.of(targetIri);
+      }
 
       if (!targetOpt.isPresent()) {
         continue;

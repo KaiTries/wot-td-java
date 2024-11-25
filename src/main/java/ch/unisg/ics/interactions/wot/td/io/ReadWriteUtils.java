@@ -18,6 +18,7 @@ import org.apache.commons.rdf.rdf4j.RDF4JGraph;
 import org.apache.commons.rdf.rdf4j.RDF4JTriple;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFHandlerException;
 import org.eclipse.rdf4j.rio.RDFParseException;
@@ -59,6 +60,7 @@ public final class ReadWriteUtils {
     RDFParser rdfParser = Rio.createParser(format);
     Model model = new LinkedHashModel();
     rdfParser.set(JSONLDSettings.SECURE_MODE, false);
+    // rdfParser.set(JSONLDSettings.EXCEPTION_ON_WARNING, true);
     rdfParser.setRDFHandler(new StatementCollector(model));
 
     try {

@@ -55,6 +55,10 @@ public class TDGraphWriter {
   }
 
   public String write(RDFFormat format) {
+    return this.write(format, null);
+  }
+
+  public String write(RDFFormat format, String base) {
     this.addTypes()
         .addTitle()
         .addSecurity()
@@ -63,8 +67,9 @@ public class TDGraphWriter {
         .addActions()
         .addEvents()
         .addGraph();
-    return ReadWriteUtils.writeToString(format, getModel());
+    return ReadWriteUtils.modelToString(getModel(),format, base);
   }
+
 
   private Model getModel() {
     return graphBuilder.build();

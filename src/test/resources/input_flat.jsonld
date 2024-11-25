@@ -1,0 +1,621 @@
+{
+  "@graph": [
+    {
+      "@id": "_:b0",
+      "@type": "https://www.w3.org/2019/wot/security#APIKeySecurityScheme",
+      "https://www.w3.org/2019/wot/security#in": "header",
+      "https://www.w3.org/2019/wot/security#name": "hue-application-key",
+      "https://www.w3.org/2019/wot/td#hasInstanceConfiguration": {
+        "@id": "basic_sc"
+      }
+    },
+    {
+      "@id": "_:b1",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "Set the state of the light. The state can be On/Off, brightness, color, and dynamics."
+      },
+      "https://www.w3.org/2019/wot/td#hasForm": {
+        "@id": "_:b2"
+      },
+      "https://www.w3.org/2019/wot/td#hasInputSchema": {
+        "@id": "_:b3"
+      },
+      "https://www.w3.org/2019/wot/td#hasOutputSchema": {
+        "@id": "_:b12"
+      },
+      "https://www.w3.org/2019/wot/td#name": "setState",
+      "https://www.w3.org/2019/wot/td#title": {
+        "@language": "en",
+        "@value": "Set the state of the light"
+      }
+    },
+    {
+      "@id": "_:b10",
+      "@type": "https://www.w3.org/2019/wot/json-schema#ObjectSchema",
+      "https://www.w3.org/2019/wot/json-schema#properties": {
+        "@id": "_:b11"
+      },
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "on",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "On/Off state of the light. On=true, Off=false"
+      }
+    },
+    {
+      "@id": "_:b11",
+      "@type": "https://www.w3.org/2019/wot/json-schema#BooleanSchema",
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "on",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "On/Off state of the light. On=true, Off=false"
+      }
+    },
+    {
+      "@id": "_:b12",
+      "@type": "https://www.w3.org/2019/wot/json-schema#ObjectSchema",
+      "https://www.w3.org/2019/wot/json-schema#properties": [
+        {
+          "@id": "_:b13"
+        },
+        {
+          "@id": "_:b17"
+        }
+      ]
+    },
+    {
+      "@id": "_:b13",
+      "@type": "https://www.w3.org/2019/wot/json-schema#ArraySchema",
+      "https://www.w3.org/2019/wot/json-schema#items": {
+        "@id": "_:b14"
+      },
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "data"
+    },
+    {
+      "@id": "_:b14",
+      "@type": "https://www.w3.org/2019/wot/json-schema#ObjectSchema",
+      "https://www.w3.org/2019/wot/json-schema#properties": [
+        {
+          "@id": "_:b15"
+        },
+        {
+          "@id": "_:b16"
+        }
+      ]
+    },
+    {
+      "@id": "_:b15",
+      "@type": "https://www.w3.org/2019/wot/json-schema#StringSchema",
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "rid",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The ID of the resource"
+      }
+    },
+    {
+      "@id": "_:b16",
+      "@type": "https://www.w3.org/2019/wot/json-schema#StringSchema",
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "rtype",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The type of the resource"
+      }
+    },
+    {
+      "@id": "_:b17",
+      "@type": "https://www.w3.org/2019/wot/json-schema#ArraySchema",
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "errors"
+    },
+    {
+      "@id": "_:b18",
+      "@type": "https://www.w3.org/2019/wot/json-schema#ObjectSchema",
+      "https://www.w3.org/2019/wot/json-schema#properties": {
+        "@id": "_:b19"
+      },
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The current state and attributes of the light. There are more attributes that are not listed here and are not of importance."
+      },
+      "https://www.w3.org/2019/wot/td#hasForm": {
+        "@id": "_:b47"
+      },
+      "https://www.w3.org/2019/wot/td#name": "lightInformation",
+      "https://www.w3.org/2019/wot/td#title": {
+        "@language": "en",
+        "@value": "State and Attributes of the Light"
+      }
+    },
+    {
+      "@id": "_:b19",
+      "@type": "https://www.w3.org/2019/wot/json-schema#ArraySchema",
+      "https://www.w3.org/2019/wot/json-schema#items": {
+        "@id": "_:b20"
+      },
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "data",
+      "https://www.w3.org/2019/wot/td#title": {
+        "@language": "en",
+        "@value": "An Array that holds the object of the information"
+      }
+    },
+    {
+      "@id": "_:b2",
+      "http://www.w3.org/2011/http#methodName": "PUT",
+      "https://www.w3.org/2019/wot/hypermedia#forContentType": "application/json",
+      "https://www.w3.org/2019/wot/hypermedia#hasOperationType": {
+        "@id": "https://www.w3.org/2019/wot/td#invokeAction"
+      },
+      "https://www.w3.org/2019/wot/hypermedia#hasTarget": {
+        "@type": "http://www.w3.org/2001/XMLSchema#anyURI",
+        "@value": ""
+      }
+    },
+    {
+      "@id": "_:b20",
+      "@type": "https://www.w3.org/2019/wot/json-schema#ObjectSchema",
+      "https://www.w3.org/2019/wot/json-schema#properties": [
+        {
+          "@id": "_:b21"
+        },
+        {
+          "@id": "_:b36"
+        },
+        {
+          "@id": "_:b39"
+        },
+        {
+          "@id": "_:b43"
+        },
+        {
+          "@id": "_:b44"
+        },
+        {
+          "@id": "_:b45"
+        },
+        {
+          "@id": "_:b46"
+        }
+      ]
+    },
+    {
+      "@id": "_:b21",
+      "@type": "https://www.w3.org/2019/wot/json-schema#ObjectSchema",
+      "https://www.w3.org/2019/wot/json-schema#properties": [
+        {
+          "@id": "_:b22"
+        },
+        {
+          "@id": "_:b32"
+        },
+        {
+          "@id": "_:b33"
+        }
+      ],
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "color",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The color of the light"
+      }
+    },
+    {
+      "@id": "_:b22",
+      "@type": "https://www.w3.org/2019/wot/json-schema#ObjectSchema",
+      "https://www.w3.org/2019/wot/json-schema#properties": [
+        {
+          "@id": "_:b23"
+        },
+        {
+          "@id": "_:b26"
+        },
+        {
+          "@id": "_:b29"
+        }
+      ],
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "gamut",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The color gamut of the light"
+      }
+    },
+    {
+      "@id": "_:b23",
+      "@type": "https://www.w3.org/2019/wot/json-schema#ObjectSchema",
+      "https://www.w3.org/2019/wot/json-schema#properties": [
+        {
+          "@id": "_:b24"
+        },
+        {
+          "@id": "_:b25"
+        }
+      ],
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "blue",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The blue color gamut of the light"
+      }
+    },
+    {
+      "@id": "_:b24",
+      "@type": "https://www.w3.org/2019/wot/json-schema#NumberSchema",
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "x",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The x coordinate of the blue color gamut in the CIE color space"
+      }
+    },
+    {
+      "@id": "_:b25",
+      "@type": "https://www.w3.org/2019/wot/json-schema#NumberSchema",
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "y",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The y coordinate of the blue color gamut in the CIE color space"
+      }
+    },
+    {
+      "@id": "_:b26",
+      "@type": "https://www.w3.org/2019/wot/json-schema#ObjectSchema",
+      "https://www.w3.org/2019/wot/json-schema#properties": [
+        {
+          "@id": "_:b27"
+        },
+        {
+          "@id": "_:b28"
+        }
+      ],
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "green",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The green color gamut of the light"
+      }
+    },
+    {
+      "@id": "_:b27",
+      "@type": "https://www.w3.org/2019/wot/json-schema#NumberSchema",
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "x",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The x coordinate of the green color gamut in the CIE color space"
+      }
+    },
+    {
+      "@id": "_:b28",
+      "@type": "https://www.w3.org/2019/wot/json-schema#NumberSchema",
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "y",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The y coordinate of the green color gamut in the CIE color space"
+      }
+    },
+    {
+      "@id": "_:b29",
+      "@type": "https://www.w3.org/2019/wot/json-schema#ObjectSchema",
+      "https://www.w3.org/2019/wot/json-schema#properties": [
+        {
+          "@id": "_:b30"
+        },
+        {
+          "@id": "_:b31"
+        }
+      ],
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "red",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The red color gamut of the light"
+      }
+    },
+    {
+      "@id": "_:b3",
+      "@type": "https://www.w3.org/2019/wot/json-schema#ObjectSchema",
+      "https://www.w3.org/2019/wot/json-schema#properties": [
+        {
+          "@id": "_:b4"
+        },
+        {
+          "@id": "_:b8"
+        },
+        {
+          "@id": "_:b10"
+        }
+      ]
+    },
+    {
+      "@id": "_:b30",
+      "@type": "https://www.w3.org/2019/wot/json-schema#NumberSchema",
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "x",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The x coordinate of the red color gamut in the CIE color space"
+      }
+    },
+    {
+      "@id": "_:b31",
+      "@type": "https://www.w3.org/2019/wot/json-schema#NumberSchema",
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "y",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The y coordinate of the red color gamut in the CIE color space"
+      }
+    },
+    {
+      "@id": "_:b32",
+      "@type": "https://www.w3.org/2019/wot/json-schema#StringSchema",
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "gamut_type",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The type of the color gamut"
+      }
+    },
+    {
+      "@id": "_:b33",
+      "@type": "https://www.w3.org/2019/wot/json-schema#ObjectSchema",
+      "https://www.w3.org/2019/wot/json-schema#properties": [
+        {
+          "@id": "_:b34"
+        },
+        {
+          "@id": "_:b35"
+        }
+      ],
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "xy",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The x and y coordinates of the color in the CIE color space"
+      }
+    },
+    {
+      "@id": "_:b34",
+      "@type": "https://www.w3.org/2019/wot/json-schema#NumberSchema",
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "x",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The x coordinate of the color in the CIE color space"
+      }
+    },
+    {
+      "@id": "_:b35",
+      "@type": "https://www.w3.org/2019/wot/json-schema#NumberSchema",
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "y",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The y coordinate of the color in the CIE color space"
+      }
+    },
+    {
+      "@id": "_:b36",
+      "@type": "https://www.w3.org/2019/wot/json-schema#ObjectSchema",
+      "https://www.w3.org/2019/wot/json-schema#properties": [
+        {
+          "@id": "_:b37"
+        },
+        {
+          "@id": "_:b38"
+        }
+      ],
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "dimming",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The brightness of the light"
+      }
+    },
+    {
+      "@id": "_:b37",
+      "@type": "https://www.w3.org/2019/wot/json-schema#NumberSchema",
+      "https://www.w3.org/2019/wot/json-schema#maximum": 100,
+      "https://www.w3.org/2019/wot/json-schema#minimum": 0,
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "brightness",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The brightness of the light. 0 is the minimum brightness and 100 is the maximum brightness"
+      }
+    },
+    {
+      "@id": "_:b38",
+      "@type": "https://www.w3.org/2019/wot/json-schema#NumberSchema",
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "min_dim_level",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The unit of the brightness"
+      }
+    },
+    {
+      "@id": "_:b39",
+      "@type": "https://www.w3.org/2019/wot/json-schema#ObjectSchema",
+      "https://www.w3.org/2019/wot/json-schema#properties": [
+        {
+          "@id": "_:b40"
+        },
+        {
+          "@id": "_:b41"
+        },
+        {
+          "@id": "_:b42"
+        }
+      ],
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "dynamics",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The dynamics of the light"
+      }
+    },
+    {
+      "@id": "_:b4",
+      "@type": "https://www.w3.org/2019/wot/json-schema#ObjectSchema",
+      "https://www.w3.org/2019/wot/json-schema#properties": {
+        "@id": "_:b5"
+      },
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "color",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The color of the light"
+      }
+    },
+    {
+      "@id": "_:b40",
+      "@type": "https://www.w3.org/2019/wot/json-schema#NumberSchema",
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "speed",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The speed of the dynamics"
+      }
+    },
+    {
+      "@id": "_:b41",
+      "@type": "https://www.w3.org/2019/wot/json-schema#BooleanSchema",
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "speed_valid",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The validity of the speed"
+      }
+    },
+    {
+      "@id": "_:b42",
+      "@type": "https://www.w3.org/2019/wot/json-schema#StringSchema",
+      "https://www.w3.org/2019/wot/json-schema#enum": [
+        "none",
+        "dynamic_palette"
+      ],
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "status",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The status of the dynamics"
+      }
+    },
+    {
+      "@id": "_:b43",
+      "@type": "https://www.w3.org/2019/wot/json-schema#StringSchema",
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "id",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The ID of the light"
+      }
+    },
+    {
+      "@id": "_:b44",
+      "@type": "https://www.w3.org/2019/wot/json-schema#StringSchema",
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "id_v1",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The ID of the light in version 1"
+      }
+    },
+    {
+      "@id": "_:b45",
+      "@type": "https://www.w3.org/2019/wot/json-schema#BooleanSchema",
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "on",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "On/Off state of the light. On=true, Off=false"
+      }
+    },
+    {
+      "@id": "_:b46",
+      "@type": "https://www.w3.org/2019/wot/json-schema#StringSchema",
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "type",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The type of the device"
+      }
+    },
+    {
+      "@id": "_:b47",
+      "http://www.w3.org/2011/http#methodName": "GET",
+      "https://www.w3.org/2019/wot/hypermedia#forContentType": "application/json",
+      "https://www.w3.org/2019/wot/hypermedia#hasOperationType": {
+        "@id": "https://www.w3.org/2019/wot/td#readProperty"
+      },
+      "https://www.w3.org/2019/wot/hypermedia#hasTarget": {
+        "@type": "http://www.w3.org/2001/XMLSchema#anyURI",
+        "@value": ""
+      }
+    },
+    {
+      "@id": "_:b5",
+      "@type": "https://www.w3.org/2019/wot/json-schema#ObjectSchema",
+      "https://www.w3.org/2019/wot/json-schema#properties": [
+        {
+          "@id": "_:b6"
+        },
+        {
+          "@id": "_:b7"
+        }
+      ],
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "xy",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The x and y coordinates of the color in the CIE color space"
+      }
+    },
+    {
+      "@id": "_:b6",
+      "@type": "https://www.w3.org/2019/wot/json-schema#NumberSchema",
+      "https://www.w3.org/2019/wot/json-schema#maximum": 1,
+      "https://www.w3.org/2019/wot/json-schema#minimum": 0,
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "x",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The x coordinate of the color in the CIE color space"
+      }
+    },
+    {
+      "@id": "_:b7",
+      "@type": "https://www.w3.org/2019/wot/json-schema#NumberSchema",
+      "https://www.w3.org/2019/wot/json-schema#maximum": 1,
+      "https://www.w3.org/2019/wot/json-schema#minimum": 0,
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "y",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The y coordinate of the color in the CIE color space"
+      }
+    },
+    {
+      "@id": "_:b8",
+      "@type": "https://www.w3.org/2019/wot/json-schema#ObjectSchema",
+      "https://www.w3.org/2019/wot/json-schema#properties": {
+        "@id": "_:b9"
+      },
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "dimming",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The brightness of the light"
+      }
+    },
+    {
+      "@id": "_:b9",
+      "@type": "https://www.w3.org/2019/wot/json-schema#NumberSchema",
+      "https://www.w3.org/2019/wot/json-schema#maximum": 100,
+      "https://www.w3.org/2019/wot/json-schema#minimum": 0,
+      "https://www.w3.org/2019/wot/json-schema#propertyName": "brightness",
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "The brightness of the light. 0 is the minimum brightness and 100 is the maximum brightness"
+      }
+    },
+    {
+      "@id": "urn:dev:ops:32473-HueLight-2",
+      "@type": "https://www.w3.org/2019/wot/td#Thing",
+      "https://www.w3.org/2019/wot/td#baseURI": "https://192.168.1.101/clip/v2/resource/light/5dc4b482-e6e4-4f0b-9783-f85a1432c845",
+      "https://www.w3.org/2019/wot/td#definesSecurityScheme": {
+        "@id": "_:b0"
+      },
+      "https://www.w3.org/2019/wot/td#description": {
+        "@language": "en",
+        "@value": "A Philips Hue lamp that can be controlled via the Hue Bridge"
+      },
+      "https://www.w3.org/2019/wot/td#hasActionAffordance": {
+        "@id": "_:b1"
+      },
+      "https://www.w3.org/2019/wot/td#hasEventAffordance": [],
+      "https://www.w3.org/2019/wot/td#hasPropertyAffordance": {
+        "@id": "_:b18"
+      },
+      "https://www.w3.org/2019/wot/td#hasSecurityConfiguration": {
+        "@type": "http://www.w3.org/2001/XMLSchema#string",
+        "@value": "basic_sc"
+      },
+      "https://www.w3.org/2019/wot/td#title": {
+        "@language": "en",
+        "@value": "Philips Hue Lamp"
+      }
+    }
+  ]
+}

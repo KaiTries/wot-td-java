@@ -2,6 +2,8 @@ package ch.unisg.ics.interactions.wot.td.io;
 
 import ch.unisg.ics.interactions.wot.td.schemas.*;
 import ch.unisg.ics.interactions.wot.td.vocabularies.JSONSchema;
+import ch.unisg.ics.interactions.wot.td.vocabularies.TD;
+import java.lang.reflect.Array;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.Models;
@@ -88,19 +90,33 @@ class SchemaGraphReader {
     for (Resource property : propertyIds) {
       Optional<DataSchema> propertySchema = readDataSchema(property);
       if (propertySchema.isPresent()) {
-        // Each property of an object should also have an associated property name
-        Optional<Literal> propertyName = Models.objectLiteral(model.filter(property,
-            rdf.createIRI(JSONSchema.propertyName), null));
-        if (!propertyName.isPresent()) {
-          throw new InvalidTDException("ObjectSchema property is missing a property name.");
+        if (!(propertySchema.get() instanceof ArraySchema)) {
+          System.out.println(propertySchema.get().getClass());
+          // Each property of an object should also have an associated property name
+          Optional<Literal> propertyName = Models.objectLiteral(model.filter(property,
+              rdf.createIRI(JSONSchema.propertyName), null));
+
+          if (propertyName.isEmpty()) {
+            throw new InvalidTDException("ObjectSchema property is missing a property name.");
+          }
+          builder.addProperty(propertyName.get().stringValue(), propertySchema.get());
+        } else {
+          propertySchema.get();// Each property of an object should also have an associated property name
+          Optional<Literal> propertyName = Models.objectLiteral(model.filter(property,
+              rdf.createIRI(TD.name), null));
+          if (propertyName.isEmpty()) {
+            throw new InvalidTDException("ArraySchema property is missing a property name.");
+          }
+          builder.addProperty(propertyName.get().stringValue(), propertySchema.get());
+
         }
-        builder.addProperty(propertyName.get().stringValue(), propertySchema.get());
       }
     }
 
     /* Read required properties */
     Set<Literal> requiredProperties = Models.objectLiterals(model.filter(schemaId,
         rdf.createIRI(JSONSchema.required), null));
+    System.out.println(requiredProperties);
     for (Literal requiredProp : requiredProperties) {
       builder.addRequiredProperties(requiredProp.stringValue());
     }

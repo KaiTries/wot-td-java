@@ -4,9 +4,11 @@ import ch.unisg.ics.interactions.wot.td.affordances.ActionAffordance;
 import ch.unisg.ics.interactions.wot.td.affordances.EventAffordance;
 import ch.unisg.ics.interactions.wot.td.affordances.Form;
 import ch.unisg.ics.interactions.wot.td.affordances.PropertyAffordance;
+import ch.unisg.ics.interactions.wot.td.clients.TDHttpRequest;
 import ch.unisg.ics.interactions.wot.td.io.InvalidTDException;
 import ch.unisg.ics.interactions.wot.td.io.ReadWriteUtils;
 import ch.unisg.ics.interactions.wot.td.io.TDGraphReader;
+import ch.unisg.ics.interactions.wot.td.io.TDGraphWriter;
 import ch.unisg.ics.interactions.wot.td.security.APIKeySecurityScheme;
 import ch.unisg.ics.interactions.wot.td.security.SecurityScheme;
 import ch.unisg.ics.interactions.wot.td.vocabularies.HCTL;
@@ -14,13 +16,21 @@ import ch.unisg.ics.interactions.wot.td.vocabularies.HTV;
 import ch.unisg.ics.interactions.wot.td.vocabularies.JSONSchema;
 import ch.unisg.ics.interactions.wot.td.vocabularies.TD;
 import ch.unisg.ics.interactions.wot.td.vocabularies.WoTSec;
+import com.apicatalog.jsonld.JsonLd;
+import com.apicatalog.jsonld.JsonLdError;
+import com.apicatalog.jsonld.document.Document;
+import com.apicatalog.jsonld.document.JsonDocument;
 import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import no.hasmac.rdf.Rdf;
+import no.hasmac.rdf.RdfDataset;
+import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.rdf4j.RDF4J;
@@ -108,24 +118,76 @@ public class ThingDescriptionTest {
     final var td = TDGraphReader.readFromURL(ThingDescription.TDFormat.RDF_JSONLD, "http" +
         "://plugfest.thingweb.io:8081/");
 
-
+    TDGraphWriter wr = new TDGraphWriter(td);
+    wr.setNamespace("td", TD.PREFIX);
+    wr.setNamespace("wotsec", WoTSec.PREFIX);
+    wr.setNamespace("htv", HTV.PREFIX);
+    wr.setNamespace("hctl", HCTL.PREFIX);
+    wr.setNamespace("schema", JSONSchema.PREFIX);
+    wr.setNamespace("xml", "http://www.w3.org/2001/XMLSchema#");
+    wr.setNamespace("hmas", "https://purl.org/hmas/");
+    System.out.println(wr.write(RDFFormat.TURTLE));
   }
 
   @Test
-  public void testInputJson() throws IOException, URISyntaxException {
+  public void testInputJson() throws IOException, URISyntaxException, JsonLdError {
     final var inputJsonLdString = Files.readString(
-        Path.of(ClassLoader.getSystemResource("input.td.jsonld").toURI()),
+        Path.of(ClassLoader.getSystemResource("uarm.jsonld").toURI()),
         StandardCharsets.UTF_8
     );
 
-    RDF4J rdfImpl = new RDF4J();
-    final var g = ReadWriteUtils.stringToGraph(inputJsonLdString, null , RDFSyntax.JSONLD);
 
-    final var s = ReadWriteUtils.graphToString(g, RDFSyntax.JSONLD);
+    ThingDescription td = TDGraphReader.readFromString(ThingDescription.TDFormat.RDF_JSONLD, inputJsonLdString);
 
-    System.out.println(s);
+    // final var t = td.getPropertyByName("homeLoc").orElseThrow();
+    // final var f = t.getFirstFormForOperationType(TD.readProperty).orElseThrow();
+
+    // TDHttpRequest r = new TDHttpRequest(f, TD.readProperty);
+
+
+    TDGraphWriter wr = new TDGraphWriter(td);
+    wr.setNamespace("td", TD.PREFIX);
+    wr.setNamespace("wotsec", WoTSec.PREFIX);
+    wr.setNamespace("htv", HTV.PREFIX);
+    wr.setNamespace("hctl", HCTL.PREFIX);
+    wr.setNamespace("schema", JSONSchema.PREFIX);
+    wr.setNamespace("xml", "http://www.w3.org/2001/XMLSchema#");
+    wr.setNamespace("hmas", "https://purl.org/hmas/");
+    System.out.println(wr.write(RDFFormat.TURTLE));
+
+
+    // r.execute();
 
     /*
+    RDF4J rdfImpl = new RDF4J();
+
+    final var g = ReadWriteUtils.stringToGraph(inputJsonLdString,
+        rdfImpl.createIRI("http://plugfest.thingweb" +
+            ".io:8081/"), RDFSyntax.JSONLD);
+
+    final var s = ReadWriteUtils.graphToString(g, RDFSyntax.TURTLE);
+
+
+
+    Document document =
+        JsonDocument.of(new ByteArrayInputStream(inputJsonLdString.getBytes()));
+
+    final var l = JsonLd.expand(document).get();
+    final var rdf = JsonLd.toRdf(document).get();
+
+    System.out.println(rdf.getDefaultGraph().toList());
+
+
+
+/*
+
+    final var t = ReadWriteUtils.stringToGraph(l.toString(), rdfImpl.createIRI("http://plugfest" +
+        ".thingweb.io:8081/"), RDFSyntax.JSONLD);
+    final var a = ReadWriteUtils.graphToString(t, RDFSyntax.TURTLE);
+
+    System.out.println(a);
+
+    /*a
 
     JSONLDParser parser = new JSONLDParser();
     parser.set(JSONLDSettings.SECURE_MODE, false);
