@@ -100,11 +100,7 @@ public class ThingDescriptionTest {
   }
 
   @Test
-  public void testInputJson() throws IOException, URISyntaxException, JsonLdError {
-    final var inputJsonLdRdfString = Files.readString(
-        Path.of(ClassLoader.getSystemResource("rdfJsonLDoutput.jsonld").toURI()),
-        StandardCharsets.UTF_8
-    );
+  public void testInputJson() throws IOException, URISyntaxException {
     final var inputJsonLdString = Files.readString(
         Path.of(ClassLoader.getSystemResource("input.td.jsonld").toURI()),
         StandardCharsets.UTF_8
@@ -113,14 +109,15 @@ public class ThingDescriptionTest {
 
     JSONLDParser parser = new JSONLDParser();
     parser.set(JSONLDSettings.SECURE_MODE, false);
-    InputStream inputStream = new ByteArrayInputStream(inputJsonLdString.getBytes(StandardCharsets.UTF_8));
+    InputStream inputStream =
+        new ByteArrayInputStream(inputJsonLdString.getBytes(StandardCharsets.UTF_8));
     final var model = new LinkedHashModel();
     model.setNamespace("td", TD.PREFIX);
     model.setNamespace("wotsec", WoTSec.PREFIX);
     model.setNamespace("htv", HTV.PREFIX);
     model.setNamespace("hctl", HCTL.PREFIX);
     model.setNamespace("schema", JSONSchema.PREFIX);
-    model.setNamespace("xml","http://www.w3.org/2001/XMLSchema#");
+    model.setNamespace("xml", "http://www.w3.org/2001/XMLSchema#");
     model.setNamespace("hmas", "https://purl.org/hmas/");
     parser.setRDFHandler(new StatementCollector(model));
     parser.parse(inputStream);
@@ -129,6 +126,7 @@ public class ThingDescriptionTest {
     System.out.println(please);
 
     final var td = TDGraphReader.readFromString(ThingDescription.TDFormat.RDF_TURTLE, please);
+  }
 
   @Test
   public void testTitle() {
