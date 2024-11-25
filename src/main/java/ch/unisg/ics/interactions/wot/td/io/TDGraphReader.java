@@ -1,5 +1,7 @@
 package ch.unisg.ics.interactions.wot.td.io;
 
+import static org.eclipse.rdf4j.model.util.Values.iri;
+
 import ch.unisg.ics.interactions.wot.td.ThingDescription;
 import ch.unisg.ics.interactions.wot.td.ThingDescription.TDFormat;
 import ch.unisg.ics.interactions.wot.td.affordances.*;
@@ -15,6 +17,7 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.rio.*;
+import org.eclipse.rdf4j.rio.helpers.JSONLDSettings;
 import org.eclipse.rdf4j.rio.helpers.StatementCollector;
 
 import java.io.IOException;
@@ -68,21 +71,17 @@ public class TDGraphReader {
 
     ThingDescription.Builder tdBuilder = new ThingDescription.Builder(reader.readThingTitle())
       .addSemanticTypes(reader.readThingTypes())
-      .addSecuritySchemes(reader.readSecuritySchemes())
+      .addSecuritySchemes(reader.readSecurityDefinitions())
       .addProperties(reader.readProperties())
       .addActions(reader.readActions())
       .addEvents(reader.readEvents())
-        .addGraph(reader.getGraph());
+      .addGraph(reader.getGraph());
 
     Optional<String> thingURI = reader.getThingURI();
-    if (thingURI.isPresent()) {
-      tdBuilder.addThingURI(thingURI.get());
-    }
+    thingURI.ifPresent(tdBuilder::addThingURI);
 
     Optional<String> base = reader.readBaseURI();
-    if (base.isPresent()) {
-      tdBuilder.addBaseURI(base.get());
-    }
+    base.ifPresent(tdBuilder::addBaseURI);
 
     return tdBuilder.build();
   }
@@ -91,9 +90,7 @@ public class TDGraphReader {
     loadModel(format, representation, "");
 
     Optional<String> baseURI = readBaseURI();
-    if (baseURI.isPresent()) {
-      loadModel(format, representation, baseURI.get());
-    }
+    baseURI.ifPresent(s -> loadModel(format, representation, s));
 
     try {
       thingId = Models.subject(model.filter(null, rdf.createIRI(TD.hasSecurityConfiguration),
@@ -107,6 +104,9 @@ public class TDGraphReader {
     this.model = new LinkedHashModel();
 
     RDFParser parser = Rio.createParser(format);
+    if (format.equals(RDFFormat.JSONLD)) {
+      parser.set(JSONLDSettings.SECURE_MODE, false);
+    }
     parser.setRDFHandler(new StatementCollector(model));
     try (StringReader stringReader = conversion(representation, format)) {
       parser.parse(stringReader, baseURI);
@@ -149,30 +149,37 @@ public class TDGraphReader {
 
   final Optional<String> readBaseURI() {
     Optional<IRI> baseURI = Models.objectIRI(model.filter(thingId, rdf.createIRI(TD.hasBase), null));
+    final var base = model.filter(thingId, rdf.createIRI(TD.hasBase), null).objects();
+    final var baseUri = base.stream().findFirst();
+    return baseUri.map(Value::stringValue).or(() -> baseURI.map(Value::stringValue));
 
-    if (baseURI.isPresent()) {
-      return Optional.of(baseURI.get().stringValue());
-    }
-
-    return Optional.empty();
   }
 
-  Map<String, SecurityScheme> readSecuritySchemes() {
+
+  Set<String> readSecuritySchemes() {
+    return Set.of();
+  }
+
+  Map<String, SecurityScheme> readSecurityDefinitions() {
     Set<Resource> schemeIds = Models.objectResources(model.filter(thingId,
       rdf.createIRI(TD.hasSecurityConfiguration), null));
 
-    if (schemeIds.isEmpty()) {
+
+    final var securityConfigs = Models.objectResources(model.filter(thingId,
+        rdf.createIRI(TD.definesSecurityScheme), null));
+
+
+    if (securityConfigs.isEmpty()) {
       throw new InvalidTDException("Missing mandatory security configuration.");
     }
 
     Map<String, SecurityScheme> schemes = new HashMap<String, SecurityScheme>();
 
-    for (Resource schemeId : schemeIds) {
+    for (Resource schemeId : securityConfigs) {
       SecurityScheme scheme;
       Set<IRI> schemeTypeIRIs = Models.objectIRIs(model.filter(schemeId, RDF.TYPE, null));
-
       Set<String> semanticTypes = schemeTypeIRIs.stream()
-        .map(iri -> iri.stringValue())
+        .map(Value::stringValue)
         .collect(Collectors.toSet());
 
       try {
@@ -194,7 +201,13 @@ public class TDGraphReader {
           throw new InvalidTDException("Unknown type of security scheme");
         }
 
-        String securityName = getUniqueSecurityName(scheme.getSchemeName());
+        Set<IRI> instanceConfigIRI = Models.objectIRIs(model.filter(schemeId,
+            iri(TD.hasInstanceConfiguration), null));
+        Set<String> instanceName = instanceConfigIRI.stream()
+            .map(Value::stringValue)
+            .collect(Collectors.toSet());
+
+        String securityName = instanceName.stream().findFirst().orElseThrow();
         schemes.put(securityName, scheme);
       } catch (Exception e) {
         throw new InvalidTDException("Invalid security scheme configuration", e);

@@ -21,6 +21,9 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.RDFSyntax;
+import org.apache.commons.rdf.rdf4j.RDF4J;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.helpers.JSONLDSettings;
@@ -32,6 +35,7 @@ import org.junit.Test;
 import java.util.List;
 import java.util.Optional;
 
+import static org.eclipse.rdf4j.model.util.Values.iri;
 import static org.junit.Assert.*;
 
 public class ThingDescriptionTest {
@@ -100,15 +104,34 @@ public class ThingDescriptionTest {
   }
 
   @Test
+  public void testAccessThingWeb() throws IOException {
+    final var td = TDGraphReader.readFromURL(ThingDescription.TDFormat.RDF_JSONLD, "http" +
+        "://plugfest.thingweb.io:8081/");
+
+
+  }
+
+  @Test
   public void testInputJson() throws IOException, URISyntaxException {
     final var inputJsonLdString = Files.readString(
         Path.of(ClassLoader.getSystemResource("input.td.jsonld").toURI()),
         StandardCharsets.UTF_8
     );
 
+    RDF4J rdfImpl = new RDF4J();
+    final var g = ReadWriteUtils.stringToGraph(inputJsonLdString, null , RDFSyntax.JSONLD);
+
+    final var s = ReadWriteUtils.graphToString(g, RDFSyntax.JSONLD);
+
+    System.out.println(s);
+
+    /*
 
     JSONLDParser parser = new JSONLDParser();
     parser.set(JSONLDSettings.SECURE_MODE, false);
+    parser.set(JSONLDSettings.USE_NATIVE_TYPES, true);
+    parser.set(JSONLDSettings.USE_RDF_TYPE, true);
+    parser.set(JSONLDSettings.HIERARCHICAL_VIEW,true);
     InputStream inputStream =
         new ByteArrayInputStream(inputJsonLdString.getBytes(StandardCharsets.UTF_8));
     final var model = new LinkedHashModel();
@@ -126,6 +149,8 @@ public class ThingDescriptionTest {
     System.out.println(please);
 
     final var td = TDGraphReader.readFromString(ThingDescription.TDFormat.RDF_TURTLE, please);
+
+     */
   }
 
   @Test
