@@ -18,7 +18,7 @@ import org.eclipse.rdf4j.rio.WriterConfig;
 import org.eclipse.rdf4j.rio.helpers.BasicWriterSettings;
 import org.eclipse.rdf4j.rio.helpers.StatementCollector;
 
-final class ReadWriteUtils {
+public final class ReadWriteUtils {
   private final static Logger LOGGER = Logger.getLogger(ReadWriteUtils.class.getCanonicalName());
 
   static Model readModelFromString(RDFFormat format, String description, String baseURI) 

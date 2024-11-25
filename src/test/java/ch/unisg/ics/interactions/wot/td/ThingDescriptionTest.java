@@ -5,10 +5,27 @@ import ch.unisg.ics.interactions.wot.td.affordances.EventAffordance;
 import ch.unisg.ics.interactions.wot.td.affordances.Form;
 import ch.unisg.ics.interactions.wot.td.affordances.PropertyAffordance;
 import ch.unisg.ics.interactions.wot.td.io.InvalidTDException;
+import ch.unisg.ics.interactions.wot.td.io.ReadWriteUtils;
+import ch.unisg.ics.interactions.wot.td.io.TDGraphReader;
 import ch.unisg.ics.interactions.wot.td.security.APIKeySecurityScheme;
 import ch.unisg.ics.interactions.wot.td.security.SecurityScheme;
+import ch.unisg.ics.interactions.wot.td.vocabularies.HCTL;
+import ch.unisg.ics.interactions.wot.td.vocabularies.HTV;
+import ch.unisg.ics.interactions.wot.td.vocabularies.JSONSchema;
 import ch.unisg.ics.interactions.wot.td.vocabularies.TD;
 import ch.unisg.ics.interactions.wot.td.vocabularies.WoTSec;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.helpers.JSONLDSettings;
+import org.eclipse.rdf4j.rio.helpers.StatementCollector;
+import org.eclipse.rdf4j.rio.jsonld.JSONLDParser;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -81,6 +98,37 @@ public class ThingDescriptionTest {
       .addEvent(event1)
       .build();
   }
+
+  @Test
+  public void testInputJson() throws IOException, URISyntaxException, JsonLdError {
+    final var inputJsonLdRdfString = Files.readString(
+        Path.of(ClassLoader.getSystemResource("rdfJsonLDoutput.jsonld").toURI()),
+        StandardCharsets.UTF_8
+    );
+    final var inputJsonLdString = Files.readString(
+        Path.of(ClassLoader.getSystemResource("input.td.jsonld").toURI()),
+        StandardCharsets.UTF_8
+    );
+
+
+    JSONLDParser parser = new JSONLDParser();
+    parser.set(JSONLDSettings.SECURE_MODE, false);
+    InputStream inputStream = new ByteArrayInputStream(inputJsonLdString.getBytes(StandardCharsets.UTF_8));
+    final var model = new LinkedHashModel();
+    model.setNamespace("td", TD.PREFIX);
+    model.setNamespace("wotsec", WoTSec.PREFIX);
+    model.setNamespace("htv", HTV.PREFIX);
+    model.setNamespace("hctl", HCTL.PREFIX);
+    model.setNamespace("schema", JSONSchema.PREFIX);
+    model.setNamespace("xml","http://www.w3.org/2001/XMLSchema#");
+    model.setNamespace("hmas", "https://purl.org/hmas/");
+    parser.setRDFHandler(new StatementCollector(model));
+    parser.parse(inputStream);
+
+    final var please = ReadWriteUtils.modelToString(model, RDFFormat.TURTLE, null);
+    System.out.println(please);
+
+    final var td = TDGraphReader.readFromString(ThingDescription.TDFormat.RDF_TURTLE, please);
 
   @Test
   public void testTitle() {
