@@ -162,8 +162,7 @@ public class TDGraphReader {
       rdf.createIRI(TD.hasSecurityConfiguration), null));
 
     if (schemeIds.isEmpty()) {
-      return Map.of();
-      // throw new InvalidTDException("Missing mandatory security configuration.");
+      throw new InvalidTDException("Missing mandatory security configuration.");
     }
 
     Map<String, SecurityScheme> schemes = new HashMap<String, SecurityScheme>();
