@@ -7,6 +7,12 @@ import ch.unisg.ics.interactions.wot.td.affordances.PropertyAffordance;
 import ch.unisg.ics.interactions.wot.td.io.ReadWriteUtils;
 import ch.unisg.ics.interactions.wot.td.io.TDGraphReader;
 import ch.unisg.ics.interactions.wot.td.io.TDGraphWriter;
+import ch.unisg.ics.interactions.wot.td.json.ContextDeserializer;
+import ch.unisg.ics.interactions.wot.td.json.PropertiesDeserializer;
+import ch.unisg.ics.interactions.wot.td.json.SecurityDefinitionsDeserializer;
+import ch.unisg.ics.interactions.wot.td.json.ThingDescriptionDeserializer;
+import ch.unisg.ics.interactions.wot.td.json.TypeDeserializer;
+import ch.unisg.ics.interactions.wot.td.schemas.ObjectSchema;
 import ch.unisg.ics.interactions.wot.td.security.APIKeySecurityScheme;
 import ch.unisg.ics.interactions.wot.td.security.SecurityScheme;
 import ch.unisg.ics.interactions.wot.td.security.TokenBasedSecurityScheme;
@@ -21,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -124,7 +131,7 @@ public class ThingDescriptionTest {
     o.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     String serialized = o.writeValueAsString(commonTd);
 
-   // System.out.println(serialized);
+   System.out.println(serialized);
     var tdWriter = new TDGraphWriter(commonTd);
     tdWriter.setNamespace("td", TD.PREFIX);
     tdWriter.setNamespace("wotsec", WoTSec.PREFIX);
@@ -135,7 +142,7 @@ public class ThingDescriptionTest {
     tdWriter2.setNamespace("td", TD.PREFIX);
     tdWriter2.setNamespace("wotsec", WoTSec.PREFIX);
     var s2 = tdWriter2.write();
-    System.out.println(s2);
+    // System.out.println(s2);
   }
 
 
@@ -155,10 +162,10 @@ public class ThingDescriptionTest {
 
     //var t = JsonLd.frame("file:/Users/kaischultz/github/wot-td-java/src/test/resources" +
     //    "/input.td.jsonld","");
-
+    /*
     JSONLDParser parser = new JSONLDParser();
     parser.set(JSONLDSettings.SECURE_MODE, false);
-    InputStream inputStream = new ByteArrayInputStream(inputJsonLdRdfString.getBytes(StandardCharsets.UTF_8));
+    InputStream inputStream = new ByteArrayInputStream(inputJsonLdString.getBytes(StandardCharsets.UTF_8));
     final var model = new LinkedHashModel();
     model.setNamespace("td", TD.PREFIX);
     model.setNamespace("wotsec", WoTSec.PREFIX);
@@ -201,21 +208,21 @@ public class ThingDescriptionTest {
     // var tJ = JsonUtil.prettyPrint(j);
 
 
-    /*
+    ObjectMapper o = new ObjectMapper();
 
 
     o.registerModule(new Jdk8Module());
     SimpleModule module = new SimpleModule();
     module.addDeserializer(ThingDescription.class, new ThingDescriptionDeserializer(
-            new ContextDeserializer(),
-            new TypeDeserializer(),
-            new SecurityDefinitionsDeserializer(),
-            new PropertiesDeserializer()
-        )
-    );
+                new ContextDeserializer(),
+                new TypeDeserializer(),
+                new SecurityDefinitionsDeserializer(),
+                new PropertiesDeserializer()
+            )
+        );
     o.registerModule(module);
 
-    ThingDescription t = o.readValue(tJ, ThingDescription.class);
+    ThingDescription t = o.readValue(inputJsonLdString, ThingDescription.class);
 
 
     var s = new TDGraphWriter(t);
@@ -234,7 +241,7 @@ public class ThingDescriptionTest {
     // System.out.println(serialized);
 
 
-     */
+
 
 
 

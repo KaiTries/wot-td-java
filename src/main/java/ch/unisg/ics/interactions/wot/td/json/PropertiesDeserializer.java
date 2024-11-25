@@ -25,6 +25,8 @@ public class PropertiesDeserializer extends JsonDeserializer<List<PropertyAfford
     JsonNode propertiesNode = p.getCodec().readTree(p);
     List<PropertyAffordance> propertiesList = new ArrayList<>();
 
+    System.out.println(propertiesNode);
+
     propertiesNode.fields().forEachRemaining(entry -> {
       JsonNode propertyJson = entry.getValue();
 
