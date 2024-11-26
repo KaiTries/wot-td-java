@@ -68,7 +68,7 @@ public class TDGraphReader {
 
     ThingDescription.Builder tdBuilder = new ThingDescription.Builder(reader.readThingTitle())
       .addSemanticTypes(reader.readThingTypes())
-      .addSecuritySchemes(reader.readSecuritySchemes())
+      // .addSecuritySchemes(reader.readSecuritySchemes())
       .addProperties(reader.readProperties())
       .addActions(reader.readActions())
       .addEvents(reader.readEvents())

@@ -5,10 +5,23 @@ import ch.unisg.ics.interactions.wot.td.affordances.EventAffordance;
 import ch.unisg.ics.interactions.wot.td.affordances.Form;
 import ch.unisg.ics.interactions.wot.td.affordances.PropertyAffordance;
 import ch.unisg.ics.interactions.wot.td.io.InvalidTDException;
+import ch.unisg.ics.interactions.wot.td.io.ReadWriteUtils;
+import ch.unisg.ics.interactions.wot.td.io.TDGraphReader;
 import ch.unisg.ics.interactions.wot.td.security.APIKeySecurityScheme;
 import ch.unisg.ics.interactions.wot.td.security.SecurityScheme;
 import ch.unisg.ics.interactions.wot.td.vocabularies.TD;
 import ch.unisg.ics.interactions.wot.td.vocabularies.WoTSec;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import jakarta.json.Json;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import org.eclipse.rdf4j.rio.RDFFormat;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -81,6 +94,39 @@ public class ThingDescriptionTest {
       .addEvent(event1)
       .build();
   }
+
+  @Test
+  public void testTesting() throws URISyntaxException, IOException {
+    final var inputJsonLDString = Files.readString(
+        Path.of(ClassLoader.getSystemResource("inputtd.jsonld").toURI()),
+        StandardCharsets.UTF_8
+    );
+    final var inputJson = JsonParser.parseString(inputJsonLDString).getAsJsonObject();
+    // Remove the specified keys
+    // inputJson.remove("security");
+    inputJson.remove("securityDefinitions");
+
+    // Create a Gson instance with pretty printing enabled
+    Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+    // Convert the JsonObject to a pretty-printed JSON string
+    String prettyJsonString = gson.toJson(inputJson);
+
+    // Print the pretty-printed JSON string
+    // System.out.println(prettyJsonString);
+
+    // final var m = ReadWriteUtils.readModelFromString(RDFFormat.JSONLD, prettyJsonString, null);
+    // final var s = ReadWriteUtils.writeToString(RDFFormat.JSONLD, m);
+
+    final var td = TDGraphReader.readFromString(ThingDescription.TDFormat.RDF_JSONLD,
+        prettyJsonString);
+
+    // System.out.println(s);
+
+  }
+
+
+
 
   @Test
   public void testTitle() {
