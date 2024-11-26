@@ -4,9 +4,7 @@ import ch.unisg.ics.interactions.wot.td.affordances.ActionAffordance;
 import ch.unisg.ics.interactions.wot.td.affordances.EventAffordance;
 import ch.unisg.ics.interactions.wot.td.affordances.Form;
 import ch.unisg.ics.interactions.wot.td.affordances.PropertyAffordance;
-import ch.unisg.ics.interactions.wot.td.clients.TDHttpRequest;
 import ch.unisg.ics.interactions.wot.td.io.InvalidTDException;
-import ch.unisg.ics.interactions.wot.td.io.ReadWriteUtils;
 import ch.unisg.ics.interactions.wot.td.io.TDGraphReader;
 import ch.unisg.ics.interactions.wot.td.io.TDGraphWriter;
 import ch.unisg.ics.interactions.wot.td.security.APIKeySecurityScheme;
@@ -16,29 +14,13 @@ import ch.unisg.ics.interactions.wot.td.vocabularies.HTV;
 import ch.unisg.ics.interactions.wot.td.vocabularies.JSONSchema;
 import ch.unisg.ics.interactions.wot.td.vocabularies.TD;
 import ch.unisg.ics.interactions.wot.td.vocabularies.WoTSec;
-import com.apicatalog.jsonld.JsonLd;
 import com.apicatalog.jsonld.JsonLdError;
-import com.apicatalog.jsonld.document.Document;
-import com.apicatalog.jsonld.document.JsonDocument;
-import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import no.hasmac.rdf.Rdf;
-import no.hasmac.rdf.RdfDataset;
-import org.apache.commons.rdf.api.Graph;
-import org.apache.commons.rdf.api.IRI;
-import org.apache.commons.rdf.api.RDFSyntax;
-import org.apache.commons.rdf.rdf4j.RDF4J;
-import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.rio.RDFFormat;
-import org.eclipse.rdf4j.rio.helpers.JSONLDSettings;
-import org.eclipse.rdf4j.rio.helpers.StatementCollector;
-import org.eclipse.rdf4j.rio.jsonld.JSONLDParser;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -132,10 +114,9 @@ public class ThingDescriptionTest {
   @Test
   public void testInputJson() throws IOException, URISyntaxException, JsonLdError {
     final var inputJsonLdString = Files.readString(
-        Path.of(ClassLoader.getSystemResource("uarm.jsonld").toURI()),
+        Path.of(ClassLoader.getSystemResource("armor.td.jsonld").toURI()),
         StandardCharsets.UTF_8
     );
-
 
     ThingDescription td = TDGraphReader.readFromString(ThingDescription.TDFormat.RDF_JSONLD, inputJsonLdString);
 
