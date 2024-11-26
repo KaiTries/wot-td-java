@@ -1,0 +1,17 @@
+{
+    "@context": "https://www.w3.org/2022/wot/td/v1.1",
+    "id": "urn:dev:ops:32473-HueLight-2",
+    "@type": "Thing",
+    "title": "Philips Hue Lamp",
+    "description": "A Philips Hue lamp that can be controlled via the Hue Bridge",
+    "securityDefinitions": {
+        "basic_sc": {
+            "scheme": "apikey",
+            "in": "header",
+            "name": "hue-application-key"
+        }
+    },
+    "security": "basic_sc",
+    "base": "https://192.168.120.22/",
+    "events": {}
+}
