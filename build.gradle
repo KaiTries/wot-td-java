@@ -24,9 +24,6 @@ dependencies {
   implementation 'com.google.code.gson:gson:2.11.0'
   implementation 'org.slf4j:slf4j-api:2.0.16'
 
-  implementation("com.apicatalog:titanium-json-ld-jre8:1.4.1")
-  implementation("org.glassfish:jakarta.json:2.0.1")
-
   implementation 'org.apache.commons:commons-collections4:4.5.0-M2'
   implementation 'commons-io:commons-io:2.16.1'
 
