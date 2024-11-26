@@ -1,5 +1,7 @@
 package ch.unisg.ics.interactions.wot.td.io;
 
+import static org.eclipse.rdf4j.model.util.Values.iri;
+
 import ch.unisg.ics.interactions.wot.td.ThingDescription;
 import ch.unisg.ics.interactions.wot.td.ThingDescription.TDFormat;
 import ch.unisg.ics.interactions.wot.td.affordances.*;
@@ -8,6 +10,8 @@ import ch.unisg.ics.interactions.wot.td.security.*;
 import ch.unisg.ics.interactions.wot.td.security.DigestSecurityScheme.QualityOfProtection;
 import ch.unisg.ics.interactions.wot.td.security.TokenBasedSecurityScheme.TokenLocation;
 import ch.unisg.ics.interactions.wot.td.vocabularies.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.hc.client5.http.fluent.Request;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -15,6 +19,8 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.rio.*;
+import org.eclipse.rdf4j.rio.helpers.JSONLDMode;
+import org.eclipse.rdf4j.rio.helpers.JSONLDSettings;
 import org.eclipse.rdf4j.rio.helpers.StatementCollector;
 
 import java.io.IOException;
@@ -35,6 +41,7 @@ public class TDGraphReader {
   private static final String[] COAP_URI_SCHEMES = new String[]{"coap", "coaps"};
 
   private final Resource thingId;
+  private final String baseUri;
   private final ValueFactory rdf = SimpleValueFactory.getInstance();
   private Model model;
 
@@ -67,22 +74,18 @@ public class TDGraphReader {
     }
 
     ThingDescription.Builder tdBuilder = new ThingDescription.Builder(reader.readThingTitle())
-      .addSemanticTypes(reader.readThingTypes())
-      .addSecuritySchemes(reader.readSecuritySchemes())
-      .addProperties(reader.readProperties())
-      .addActions(reader.readActions())
-      .addEvents(reader.readEvents())
+        .addSemanticTypes(reader.readThingTypes())
+        .addSecuritySchemes(reader.readSecuritySchemes())
+        .addProperties(reader.readProperties())
+        .addActions(reader.readActions())
+        .addEvents(reader.readEvents())
         .addGraph(reader.getGraph());
 
     Optional<String> thingURI = reader.getThingURI();
-    if (thingURI.isPresent()) {
-      tdBuilder.addThingURI(thingURI.get());
-    }
+    thingURI.ifPresent(tdBuilder::addThingURI);
 
     Optional<String> base = reader.readBaseURI();
-    if (base.isPresent()) {
-      tdBuilder.addBaseURI(base.get());
-    }
+    base.ifPresent(tdBuilder::addBaseURI);
 
     return tdBuilder.build();
   }
@@ -91,8 +94,12 @@ public class TDGraphReader {
     loadModel(format, representation, "");
 
     Optional<String> baseURI = readBaseURI();
+
     if (baseURI.isPresent()) {
       loadModel(format, representation, baseURI.get());
+      this.baseUri = baseURI.get();
+    } else {
+      this.baseUri = null;
     }
 
     try {
@@ -101,12 +108,46 @@ public class TDGraphReader {
     } catch (NoSuchElementException e) {
       throw new InvalidTDException("Missing mandatory security definitions.", e);
     }
+
+    if(format.equals(RDFFormat.JSONLD)) {
+      fixModel();
+    }
   }
+
+  private void fixModel() {
+    String uriToUse;
+    if (this.baseUri == null) {
+      System.out.println("TD did not specify a base but used relative uris");
+      uriToUse = "http://example.org/";
+    } else {
+      uriToUse = this.baseUri;
+    }
+
+    if (!uriToUse.endsWith(("/"))) {
+      uriToUse += "/";
+    }
+
+    model.remove(null, iri(TD.hasBase), null);
+    final var instanceName = Models.objectLiteral(model.filter(null,
+        iri(TD.hasSecurityConfiguration), null));
+    if (instanceName.isPresent()) {
+      model.remove(null, iri(TD.hasSecurityConfiguration), null);
+      model.add(thingId, iri(TD.hasSecurityConfiguration),
+          iri(uriToUse + instanceName.get().stringValue()));
+    }
+  }
+
 
   private void loadModel(RDFFormat format, String representation, String baseURI) {
     this.model = new LinkedHashModel();
 
     RDFParser parser = Rio.createParser(format);
+    if (format.equals(RDFFormat.JSONLD)) {
+      parser.set(JSONLDSettings.SECURE_MODE, false);
+      parser.set(JSONLDSettings.USE_RDF_TYPE,true);
+      parser.set(JSONLDSettings.OPTIMIZE, true);
+
+    }
     parser.setRDFHandler(new StatementCollector(model));
     try (StringReader stringReader = conversion(representation, format)) {
       parser.parse(stringReader, baseURI);
@@ -128,13 +169,15 @@ public class TDGraphReader {
   }
 
   String readThingTitle() {
-  	Literal thingTitle;
+    Literal thingTitle;
 
     try {
       thingTitle = Models.objectLiteral(model.filter(thingId, rdf.createIRI(TD.title), null)).get();
     } catch (NoSuchElementException e) {
       throw new InvalidTDException("Missing mandatory title.", e);
     }
+
+    model.remove(thingId,rdf.createIRI(TD.title), thingTitle);
 
     return thingTitle.stringValue();
   }
@@ -143,36 +186,117 @@ public class TDGraphReader {
     Set<IRI> thingTypes = Models.objectIRIs(model.filter(thingId, RDF.TYPE, null));
 
     return thingTypes.stream()
-      .map(iri -> iri.stringValue())
-      .collect(Collectors.toSet());
+        .map(Value::stringValue)
+        .collect(Collectors.toSet());
   }
 
   final Optional<String> readBaseURI() {
     Optional<IRI> baseURI = Models.objectIRI(model.filter(thingId, rdf.createIRI(TD.hasBase), null));
+    final var base = model.filter(thingId, rdf.createIRI(TD.hasBase), null).objects();
+    final var baseUri = base.stream().findFirst();
+    return baseUri.map(Value::stringValue).or(() -> baseURI.map(Value::stringValue));
 
-    if (baseURI.isPresent()) {
-      return Optional.of(baseURI.get().stringValue());
-    }
-
-    return Optional.empty();
   }
+
+  /*
+
+
+  Set<String> readSecuritySchemes() {
+    return Set.of();
+  }
+
+  */
+
+  /*
+<urn:dev:ops:32473-HueLight-2> a td:Thing;
+  td:title "Philips Hue Lamp", "Philips Hue Lamp"@en;
+  td:definesSecurityScheme [ a wotsec:APIKeySecurityScheme;
+      wotsec:in "header";
+      wotsec:name "hue-application-key";
+      td:hasInstanceConfiguration base:basic_sc
+    ];
+  td:description "A Philips Hue lamp that can be controlled via the Hue Bridge"@en;
+  td:hasSecurityConfiguration base:basic_sc .
+   */
 
   Map<String, SecurityScheme> readSecuritySchemes() {
     Set<Resource> schemeIds = Models.objectResources(model.filter(thingId,
-      rdf.createIRI(TD.hasSecurityConfiguration), null));
+        rdf.createIRI(TD.hasSecurityConfiguration), null));
 
     if (schemeIds.isEmpty()) {
       throw new InvalidTDException("Missing mandatory security configuration.");
     }
 
-    Map<String, SecurityScheme> schemes = new HashMap<String, SecurityScheme>();
+    Map<String, SecurityScheme> schemes = new HashMap<>();
 
     for (Resource schemeId : schemeIds) {
       SecurityScheme scheme;
-      Set<IRI> schemeTypeIRIs = Models.objectIRIs(model.filter(schemeId, RDF.TYPE, null));
+      Optional<BNode> schemeTypeIRIs = Models.subjectBNode(model.filter(null,
+          iri(TD.hasInstanceConfiguration), schemeId));
+      Optional<BNode> bNode = Models.subjectBNode(model.filter(null,
+          iri(TD.hasInstanceConfiguration), schemeId));
 
+      if (bNode.isEmpty()) {
+        System.out.println("failed to find security scheme");
+        continue;
+      }
+      var schemeTypes = Models.objectIRI(model.filter(bNode.get(), RDF.TYPE, null));
+
+      Set<String> semanticTypes = schemeTypes.stream()
+          .map(Value::stringValue)
+          .collect(Collectors.toSet());
+
+      try {
+        if (semanticTypes.contains(WoTSec.NoSecurityScheme)) {
+          scheme = SecurityScheme.getNoSecurityScheme();
+        } else if (semanticTypes.contains(WoTSec.APIKeySecurityScheme)) {
+          scheme = readAPIKeySecurityScheme(bNode.get(), semanticTypes);
+        } else if (semanticTypes.contains(WoTSec.BasicSecurityScheme)) {
+          scheme = readBasicSecurityScheme(bNode.get(), semanticTypes);
+        } else if (semanticTypes.contains(WoTSec.DigestSecurityScheme)) {
+          scheme = readDigestSecurityScheme(bNode.get(), semanticTypes);
+        } else if (semanticTypes.contains(WoTSec.BearerSecurityScheme)) {
+          scheme = readBearerSecurityScheme(bNode.get(), semanticTypes);
+        } else if (semanticTypes.contains(WoTSec.PSKSecurityScheme)) {
+          scheme = readPSKSecurityScheme(bNode.get(), semanticTypes);
+        } else if (semanticTypes.contains(WoTSec.OAuth2SecurityScheme)) {
+          scheme = readOAuth2SecurityScheme(schemeId, semanticTypes);
+        } else {
+          throw new InvalidTDException("Unknown type of security scheme");
+        }
+        schemes.put(schemeId.stringValue(), scheme);
+
+        model.remove(bNode.get(),null,null);
+        model.remove(thingId, rdf.createIRI(TD.definesSecurityScheme), bNode.get());
+
+      } catch (Exception e) {
+        throw new InvalidTDException("Invalid security scheme configuration", e);
+      }
+    }
+
+    return schemes;
+  }
+  /*
+  Map<String, SecurityScheme> readSecurityDefinitions() {
+    Set<Resource> schemeIds = Models.objectResources(model.filter(thingId,
+      rdf.createIRI(TD.hasSecurityConfiguration), null));
+
+
+    final var securityConfigs = Models.objectResources(model.filter(thingId,
+        rdf.createIRI(TD.definesSecurityScheme), null));
+
+
+    if (securityConfigs.isEmpty()) {
+      throw new InvalidTDException("Missing mandatory security configuration.");
+    }
+
+    Map<String, SecurityScheme> schemes = new HashMap<String, SecurityScheme>();
+
+    for (Resource schemeId : securityConfigs) {
+      SecurityScheme scheme;
+      Set<IRI> schemeTypeIRIs = Models.objectIRIs(model.filter(schemeId, RDF.TYPE, null));
       Set<String> semanticTypes = schemeTypeIRIs.stream()
-        .map(iri -> iri.stringValue())
+        .map(Value::stringValue)
         .collect(Collectors.toSet());
 
       try {
@@ -194,18 +318,30 @@ public class TDGraphReader {
           throw new InvalidTDException("Unknown type of security scheme");
         }
 
-        String securityName = getUniqueSecurityName(scheme.getSchemeName());
+        Set<IRI> instanceConfigIRI = Models.objectIRIs(model.filter(schemeId,
+            iri(TD.hasInstanceConfiguration), null));
+        Set<String> instanceName = instanceConfigIRI.stream()
+            .map(Value::stringValue)
+            .collect(Collectors.toSet());
+        if (instanceName.isEmpty()) {
+          var t = model.filter(schemeId,
+              iri(TD.hasInstanceConfiguration), null);
+          instanceName.add("nosec_sc");
+        }
+
+        String securityName = instanceName.stream().findFirst().orElseThrow();
         schemes.put(securityName, scheme);
       } catch (Exception e) {
         throw new InvalidTDException("Invalid security scheme configuration", e);
       }
     }
-
     return schemes;
   }
 
+
+   */
   private SecurityScheme readTokenBasedSecurityScheme(TokenBasedSecurityScheme.Builder<?, ?> schemeBuilder, Resource schemeId,
-                                              Set<String> semanticTypes) {
+                                                      Set<String> semanticTypes) {
     Optional<Literal> in = Models.objectLiteral(model.filter(schemeId, rdf.createIRI(WoTSec.in), null));
     if (in.isPresent()) {
       schemeBuilder.addTokenLocation(TokenLocation.fromString(in.get().stringValue()));
@@ -250,7 +386,7 @@ public class TDGraphReader {
     }
 
     Optional<IRI> authorization = Models.objectIRI(model.filter(schemeId, rdf.createIRI(WoTSec.authorization),
-      null));
+        null));
     if (authorization.isPresent()) {
       schemeBuilder.addAuthorization(authorization.get().stringValue());
     }
@@ -267,7 +403,7 @@ public class TDGraphReader {
     PSKSecurityScheme.Builder schemeBuilder = new PSKSecurityScheme.Builder();
 
     Optional<Literal> identity = Models.objectLiteral(model.filter(schemeId, rdf.createIRI(WoTSec.identity),
-      null));
+        null));
     if (identity.isPresent()) {
       schemeBuilder.addIdentity(identity.get().stringValue());
     }
@@ -279,7 +415,7 @@ public class TDGraphReader {
   private SecurityScheme readOAuth2SecurityScheme(Resource schemeId, Set<String> semanticTypes) {
 
     Optional<Literal> flow = Models.objectLiteral(model.filter(schemeId, rdf.createIRI(WoTSec.flow),
-      null));
+        null));
 
     if (flow.isPresent()) {
       OAuth2SecurityScheme.Builder schemeBuilder = new OAuth2SecurityScheme.Builder(flow.get().stringValue());
@@ -300,10 +436,10 @@ public class TDGraphReader {
       }
 
       Set<String> scopes = Models.objectLiterals(model.filter(schemeId, rdf.createIRI(WoTSec.scopes),
-          null))
-        .stream()
-        .map(scope -> scope.stringValue())
-        .collect(Collectors.toSet());
+              null))
+          .stream()
+          .map(scope -> scope.stringValue())
+          .collect(Collectors.toSet());
 
       if (!scopes.isEmpty()) {
         schemeBuilder.addScopes(scopes);
@@ -312,7 +448,7 @@ public class TDGraphReader {
       return schemeBuilder.build();
     } else {
       throw new InvalidTDException("Missing or invalid configuration value of type " + WoTSec.flow +
-        " on defining security scheme");
+          " on defining security scheme");
     }
   }
 
@@ -342,7 +478,7 @@ public class TDGraphReader {
         readUriVariables(builder, propertyId);
 
         Optional<Literal> observable = Models.objectLiteral(model.filter(propertyId,
-          rdf.createIRI(TD.isObservable), null));
+            rdf.createIRI(TD.isObservable), null));
         if (observable.isPresent() && observable.get().booleanValue()) {
           builder.addObserve();
         }
@@ -421,7 +557,7 @@ public class TDGraphReader {
     List<EventAffordance> events = new ArrayList<>();
 
     Set<Resource> affordanceIds = Models.objectResources(model.filter(thingId,
-      rdf.createIRI(TD.hasEventAffordance), null));
+        rdf.createIRI(TD.hasEventAffordance), null));
 
     for (Resource affordanceId : affordanceIds) {
       if (!model.contains(affordanceId, RDF.TYPE, rdf.createIRI(TD.EventAffordance))) {
@@ -449,7 +585,7 @@ public class TDGraphReader {
 
     try {
       Optional<Resource> subscriptionSchemaId = Models.objectResource(model.filter(affordanceId,
-        rdf.createIRI(TD.hasSubscriptionSchema), null));
+          rdf.createIRI(TD.hasSubscriptionSchema), null));
 
       if (subscriptionSchemaId.isPresent()) {
         Optional<DataSchema> subscription = SchemaGraphReader.readDataSchema(subscriptionSchemaId.get(), model);
@@ -459,7 +595,7 @@ public class TDGraphReader {
       }
 
       Optional<Resource> notificationSchemaId = Models.objectResource(model.filter(affordanceId,
-        rdf.createIRI(TD.hasNotificationSchema), null));
+          rdf.createIRI(TD.hasNotificationSchema), null));
 
       if (notificationSchemaId.isPresent()) {
         Optional<DataSchema> notification = SchemaGraphReader.readDataSchema(notificationSchemaId.get(), model);
@@ -469,7 +605,7 @@ public class TDGraphReader {
       }
 
       Optional<Resource> cancellationSchemaId = Models.objectResource(model.filter(affordanceId,
-        rdf.createIRI(TD.hasCancellationSchema), null));
+          rdf.createIRI(TD.hasCancellationSchema), null));
 
       if (cancellationSchemaId.isPresent()) {
         Optional<DataSchema> cancellation = SchemaGraphReader.readDataSchema(cancellationSchemaId.get(), model);
@@ -490,7 +626,7 @@ public class TDGraphReader {
 
     try {
       affordanceName = Models.objectLiteral(model.filter(affordanceId, rdf.createIRI(TD.name),
-        null)).get();
+          null)).get();
     } catch (NoSuchElementException e) {
       throw new InvalidTDException("Missing mandatory affordance name.", e);
     }
@@ -499,15 +635,15 @@ public class TDGraphReader {
   }
 
   private void readAffordanceMetadata(InteractionAffordance
-                                        .Builder<?, ? extends InteractionAffordance.Builder<?, ?>> builder, Resource affordanceId) {
+                                          .Builder<?, ? extends InteractionAffordance.Builder<?, ?>> builder, Resource affordanceId) {
     /* Read semantic types */
     Set<IRI> types = Models.objectIRIs(model.filter(affordanceId, RDF.TYPE, null));
     builder.addSemanticTypes(types.stream().map(type -> type.stringValue())
-      .collect(Collectors.toList()));
+        .collect(Collectors.toList()));
 
     /* Read title */
     Optional<Literal> title = Models.objectLiteral(model.filter(affordanceId,
-      rdf.createIRI(TD.title), null));
+        rdf.createIRI(TD.title), null));
 
     if (title.isPresent()) {
       builder.addTitle(title.get().stringValue());
@@ -524,6 +660,28 @@ public class TDGraphReader {
       Optional<IRI> targetOpt = Models.objectIRI(model.filter(formId, rdf.createIRI(HCTL.hasTarget),
           null));
 
+      if (targetOpt.isEmpty()) {
+        final var t = Models.objectLiteral(model.filter(formId, rdf.createIRI(HCTL.hasTarget),
+            null));
+        if (!t.isPresent()) {
+          continue;
+        }
+        final var lable = t.get().getLabel();
+        IRI targetIri;
+        try {
+          targetIri = iri(lable);
+        } catch (IllegalArgumentException e) {
+          if (baseUri != null) {
+            String encodedUrl = lable.replace("{", "%7B").replace("}", "%7D");
+            targetIri = iri(baseUri + encodedUrl);
+          } else {
+            System.out.println("no base uri and relative href");
+            throw e;
+          }
+        }
+        targetOpt = Optional.of(targetIri);
+      }
+
       if (!targetOpt.isPresent()) {
         continue;
       }
@@ -531,22 +689,22 @@ public class TDGraphReader {
       Optional<Literal> methodNameOpt = Optional.empty();
       if (Arrays.stream(HTTP_URI_SCHEMES).anyMatch(targetOpt.toString()::contains)) {
         methodNameOpt = Models.objectLiteral(model.filter(formId,
-          rdf.createIRI(HTV.methodName), null));
+            rdf.createIRI(HTV.methodName), null));
       } else if (Arrays.stream(COAP_URI_SCHEMES).anyMatch(targetOpt.toString()::contains)) {
         methodNameOpt = Models.objectLiteral(model.filter(formId,
-          rdf.createIRI(COV.methodName), null));
+            rdf.createIRI(COV.methodName), null));
       }
 
       Optional<Literal> contentTypeOpt = Models.objectLiteral(model.filter(formId,
-        rdf.createIRI(HCTL.forContentType), null));
+          rdf.createIRI(HCTL.forContentType), null));
       String contentType = contentTypeOpt.isPresent() ? contentTypeOpt.get().stringValue()
-        : "application/json";
+          : "application/json";
 
       Optional<String> subprotocolOpt = Models.objectString(model.filter(formId,
-        rdf.createIRI(HCTL.forSubProtocol), null));
+          rdf.createIRI(HCTL.forSubProtocol), null));
 
       Set<IRI> opsIRIs = Models.objectIRIs(model.filter(formId, rdf.createIRI(HCTL.hasOperationType),
-        null));
+          null));
 
       Set<String> ops = opsIRIs.stream().map(op -> op.stringValue()).collect(Collectors.toSet());
       String target = targetOpt.get().stringValue();
@@ -567,14 +725,14 @@ public class TDGraphReader {
 
     if (forms.isEmpty()) {
       throw new InvalidTDException("[" + affordanceType + "] All interaction affordances should have "
-        + "at least one valid.");
+          + "at least one valid.");
     }
 
     return forms;
   }
 
   private void readUriVariables(InteractionAffordance
-                                  .Builder<?, ? extends InteractionAffordance.Builder<?, ?>> builder, Resource affordanceId){
+                                    .Builder<?, ? extends InteractionAffordance.Builder<?, ?>> builder, Resource affordanceId){
     Set<Resource> uriVariableIds = Models.objectResources(model.filter(affordanceId, rdf.createIRI(TD.hasUriTemplateSchema), null));
     for (Resource uriVariableId : uriVariableIds){
       readUriVariable(builder, uriVariableId);
@@ -582,14 +740,14 @@ public class TDGraphReader {
   }
 
   private void readUriVariable(InteractionAffordance
-                                  .Builder<?, ? extends InteractionAffordance.Builder<?, ?>> builder, Resource uriVariableId) {
-      Optional<DataSchema> opDataSchema = SchemaGraphReader.readDataSchema(uriVariableId, model);
-      Optional<Literal> opNameLiteral = Models.objectLiteral(model.filter(uriVariableId, rdf.createIRI(TD.name), null));
-      if (opDataSchema.isPresent() && opNameLiteral.isPresent()){
-        String name = opNameLiteral.get().stringValue();
-        DataSchema schema = opDataSchema.get();
-        builder.addUriVariable(name, schema);
-      }
+                                   .Builder<?, ? extends InteractionAffordance.Builder<?, ?>> builder, Resource uriVariableId) {
+    Optional<DataSchema> opDataSchema = SchemaGraphReader.readDataSchema(uriVariableId, model);
+    Optional<Literal> opNameLiteral = Models.objectLiteral(model.filter(uriVariableId, rdf.createIRI(TD.name), null));
+    if (opDataSchema.isPresent() && opNameLiteral.isPresent()){
+      String name = opNameLiteral.get().stringValue();
+      DataSchema schema = opDataSchema.get();
+      builder.addUriVariable(name, schema);
+    }
   }
 
   private StringReader conversion(String str, RDFFormat format){
