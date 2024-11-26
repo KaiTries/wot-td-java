@@ -28,7 +28,7 @@ public class TDGraphWriter {
 
   public TDGraphWriter(ThingDescription td) {
     this.thingId = td.getThingURI().isPresent() ? rdf.createIRI(td.getThingURI().get())
-      : rdf.createBNode();
+        : rdf.createBNode();
 
     this.td = td;
     this.graphBuilder = new ModelBuilder();
@@ -55,6 +55,10 @@ public class TDGraphWriter {
   }
 
   public String write(RDFFormat format) {
+    return this.write(format, null);
+  }
+
+  public String write(RDFFormat format, String base) {
     this.addTypes()
         .addTitle()
         .addSecurity()
@@ -63,8 +67,9 @@ public class TDGraphWriter {
         .addActions()
         .addEvents()
         .addGraph();
-    return ReadWriteUtils.writeToString(format, getModel());
+    return ReadWriteUtils.modelToString(getModel(),format, base);
   }
+
 
   private Model getModel() {
     return graphBuilder.build();
@@ -74,11 +79,16 @@ public class TDGraphWriter {
     Map<String, SecurityScheme> securitySchemes = td.getSecurityDefinitions();
 
     List<IRI> confTypesForIris = new ArrayList<>(Arrays.asList(rdf.createIRI(WoTSec.authorization),
-      rdf.createIRI(WoTSec.token), rdf.createIRI(WoTSec.refresh)));
+        rdf.createIRI(WoTSec.token), rdf.createIRI(WoTSec.refresh)));
 
-    for (SecurityScheme scheme : securitySchemes.values()) {
+    for (String schemeName : securitySchemes.keySet()) {
+      SecurityScheme scheme = securitySchemes.get(schemeName);
       BNode schemeId = rdf.createBNode();
-      graphBuilder.add(thingId, rdf.createIRI(TD.hasSecurityConfiguration), schemeId);
+      graphBuilder.add(thingId, rdf.createIRI(TD.hasSecurityConfiguration),
+          rdf.createIRI(schemeName));
+      graphBuilder.add(thingId, rdf.createIRI(TD.definesSecurityScheme), schemeId);
+      graphBuilder.add(schemeId, rdf.createIRI(TD.hasInstanceConfiguration),
+          rdf.createIRI(schemeName));
 
       Map<String, Object> configuration = scheme.getConfiguration();
 
@@ -101,7 +111,7 @@ public class TDGraphWriter {
               graphBuilder.add(schemeId, confTypeIri, rdf.createIRI((String) objConfValue));
             } catch (IllegalArgumentException e) {
               throw new InvalidTDException("Invalid security scheme configuration. " + confTypeIri + " value should" +
-                " be a valid IRI.", e);
+                  " be a valid IRI.", e);
             }
           } else {
             graphBuilder.add(schemeId, confTypeIri, objConfValue);
@@ -131,7 +141,7 @@ public class TDGraphWriter {
   private TDGraphWriter addBaseURI() {
     if (td.getBaseURI().isPresent()) {
       graphBuilder.add(thingId, rdf.createIRI(TD.hasBase),
-        rdf.createIRI(td.getBaseURI().get()));
+          rdf.createIRI(td.getBaseURI().get()));
     }
 
     return this;
@@ -214,8 +224,8 @@ public class TDGraphWriter {
       getModel().addAll(td.getGraph().get());
 
       td.getGraph().get().getNamespaces().stream()
-        .filter(ns -> !getModel().getNamespace(ns.getPrefix()).isPresent())
-        .forEach(graphBuilder::setNamespace);
+          .filter(ns -> !getModel().getNamespace(ns.getPrefix()).isPresent())
+          .forEach(graphBuilder::setNamespace);
     }
     return this;
   }
