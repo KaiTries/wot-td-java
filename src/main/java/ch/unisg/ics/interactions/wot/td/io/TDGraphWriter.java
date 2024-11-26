@@ -35,11 +35,7 @@ public class TDGraphWriter {
   }
 
   public static String write(ThingDescription td) {
-    return new TDGraphWriter(td).write(RDFFormat.TURTLE);
-  }
-
-  public static String write(ThingDescription td, RDFFormat format) {
-    return new TDGraphWriter(td).write(format);
+    return new TDGraphWriter(td).write();
   }
 
   /**
@@ -54,23 +50,21 @@ public class TDGraphWriter {
     return this;
   }
 
-  public String write(RDFFormat format) {
-    return this.write(format, null);
+  private String write(RDFFormat format) {
+    return ReadWriteUtils.writeToString(format, getModel());
   }
 
-  public String write(RDFFormat format, String base) {
-    this.addTypes()
+  public String write() {
+    return this.addTypes()
         .addTitle()
         .addSecurity()
         .addBaseURI()
         .addProperties()
         .addActions()
         .addEvents()
-        .addGraph();
-    return ReadWriteUtils.modelToString(getModel(),format, base);
+        .addGraph()
+        .write(RDFFormat.TURTLE);
   }
-
-
   private Model getModel() {
     return graphBuilder.build();
   }

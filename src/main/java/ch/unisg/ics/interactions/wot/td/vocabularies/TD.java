@@ -13,7 +13,7 @@ public final class TD {
   public static final String EventAffordance = PREFIX + "EventAffordance";
 
   /* Object properties */
-  public static final String hasBase = PREFIX + "hasBase";
+  public static final String hasBase = PREFIX + "baseURI";
   public static final String name = PREFIX + "name";
   public static final String title = PREFIX + "title";
 
@@ -23,6 +23,8 @@ public final class TD {
   public static final String hasEventAffordance = PREFIX + "hasEventAffordance";
 
   public static final String hasSecurityConfiguration = PREFIX + "hasSecurityConfiguration";
+  public static final String definesSecurityScheme = PREFIX + "definesSecurityScheme";
+  public static final String hasInstanceConfiguration = PREFIX + "hasInstanceConfiguration";
 
   public static final String isObservable = PREFIX + "isObservable";
 
@@ -45,6 +47,7 @@ public final class TD {
   public static final String unobserveProperty = PREFIX + "unobserveProperty";
   public static final String subscribeEvent = PREFIX + "subscribeEvent";
   public static final String unsubscribeEvent = PREFIX + "unsubscribeEvent";
+
 
   public static IRI createIRI(String fragment) {
     return SimpleValueFactory.getInstance().createIRI(PREFIX + fragment);
