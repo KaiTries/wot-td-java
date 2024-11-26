@@ -91,7 +91,6 @@ public class TDGraphWriter {
           rdf.createIRI(schemeName));
 
       Map<String, Object> configuration = scheme.getConfiguration();
-      System.out.println(configuration);
 
       for (String semanticType : scheme.getSemanticTypes()) {
         graphBuilder.add(schemeId, RDF.TYPE, rdf.createIRI(semanticType));

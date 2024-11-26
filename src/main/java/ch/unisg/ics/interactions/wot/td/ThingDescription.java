@@ -55,7 +55,6 @@ public class ThingDescription {
     this.security = security;
     this.securityDefinitions = securityDefinitions;
 
-    /* Set up nosec security
     if (this.security.isEmpty()) {
       if (getFirstSecuritySchemeByType(WoTSec.NoSecurityScheme).isPresent()) {
         this.security.add(getFirstSecuritySchemeByType(WoTSec.NoSecurityScheme).get());
@@ -65,7 +64,6 @@ public class ThingDescription {
         this.securityDefinitions.put("nosec", nosec);
       }
     }
-     */
 
     this.uri = uri;
     this.types = types;
@@ -74,27 +72,6 @@ public class ThingDescription {
     this.properties = properties;
     this.actions = actions;
     this.events = events;
-
-    /*
-    if (graph.isPresent()) {
-      final var m = graph.get();
-      if (baseURI.isPresent()) {
-        m.remove(null, iri(TD.hasBase), null);
-        if (uri.isPresent()) {
-          final var instanceName = Models.objectLiteral(m.filter(null,
-              iri(TD.hasSecurityConfiguration), null));
-          if (instanceName.isPresent()) {
-            m.remove(null, iri(TD.hasSecurityConfiguration), null);
-            m.add(iri(uri.get()), iri(TD.hasSecurityConfiguration),
-                iri(baseURI.get() + instanceName.get().stringValue()));
-          }
-        }
-      }
-
-    }
-
-     */
-
 
     this.graph = graph;
   }

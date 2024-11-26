@@ -6,10 +6,17 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import java.util.stream.Stream;
+import javax.swing.text.html.parser.DocumentParser;
+import javax.xml.parsers.DocumentBuilder;
+import no.hasmac.jsonld.JsonLdError;
+import no.hasmac.jsonld.document.Document;
+import no.hasmac.jsonld.document.JsonDocument;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
@@ -36,7 +43,28 @@ public final class ReadWriteUtils {
   private final static Logger LOGGER = Logger.getLogger(ReadWriteUtils.class.getCanonicalName());
   private final static RDF4J rdfImpl = new RDF4J();
 
-  static Model readModelFromString(RDFFormat format, String description, String baseURI) 
+
+  public static Model loadModel(RDFFormat format, String representation, String baseURI) {
+    final var model = new LinkedHashModel();
+
+    RDFParser parser = Rio.createParser(format);
+    if (format.equals(RDFFormat.JSONLD)) {
+      parser.set(JSONLDSettings.SECURE_MODE, false);
+      parser.set(JSONLDSettings.USE_RDF_TYPE,true);
+      parser.set(JSONLDSettings.OPTIMIZE, true);
+
+    }
+    parser.setRDFHandler(new StatementCollector(model));
+    try (StringReader stringReader = new StringReader(representation)) {
+      parser.parse(stringReader, baseURI);
+    } catch (RDFParseException | RDFHandlerException | IOException e) {
+      throw new InvalidTDException("RDF Syntax Error", e);
+    }
+    return model;
+  }
+
+
+  public static Model readModelFromString(RDFFormat format, String description, String baseURI)
       throws RDFParseException, RDFHandlerException, IOException {
     StringReader stringReader = new StringReader(description);
     
@@ -138,6 +166,19 @@ public final class ReadWriteUtils {
   }
 
 
+  public static String jsonStrintoRdfString(final String input) throws IOException {
+    return graphToString(stringToGraph(input, null, RDFSyntax.JSONLD),RDFSyntax.TURTLE);
+  }
+
+  private static Document getFixedContext () throws URISyntaxException, IOException, JsonLdError {
+    final var inputJsonLdString = Files.readString(
+        Path.of(ClassLoader.getSystemResource("context.jsonld").toURI()),
+        StandardCharsets.UTF_8
+    );
+    return JsonDocument.of(new StringReader(inputJsonLdString));
+  }
+
+
   public static String modelToString(final Model model, final RDFFormat format, final String base)
       throws IllegalArgumentException {
     final var test = new ByteArrayOutputStream();
@@ -154,12 +195,22 @@ public final class ReadWriteUtils {
       return "";
     }
 
+
+
     if (format.equals(RDFFormat.JSONLD)) {
-      writer.getWriterConfig()
-          .set(JSONLDSettings.JSONLD_MODE,
-              JSONLDMode.FLATTEN)
-          .set(JSONLDSettings.USE_NATIVE_TYPES, true)
-          .set(JSONLDSettings.OPTIMIZE, true);
+
+      try {
+
+        writer.getWriterConfig()
+            .set(JSONLDSettings.FRAME, getFixedContext())
+            .set(JSONLDSettings.JSONLD_MODE,
+                JSONLDMode.FRAME)
+            .set(JSONLDSettings.USE_NATIVE_TYPES, true)
+            .set(JSONLDSettings.OPTIMIZE, true);
+      } catch (Exception e) {
+        System.out.println("failed");
+        System.out.println(e);
+      }
     }
     writer.getWriterConfig()
         .set(BasicWriterSettings.PRETTY_PRINT, true)
@@ -181,7 +232,7 @@ public final class ReadWriteUtils {
 
 
 
-  static String writeToString(RDFFormat format, Model model) {
+  public static String writeToString(RDFFormat format, Model model) {
     OutputStream out = new ByteArrayOutputStream();
     
     try {

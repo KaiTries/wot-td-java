@@ -122,6 +122,11 @@ public class TDGraphReader {
     } else {
       uriToUse = this.baseUri;
     }
+
+    if (!uriToUse.endsWith(("/"))) {
+      uriToUse += "/";
+    }
+
     model.remove(null, iri(TD.hasBase), null);
     final var instanceName = Models.objectLiteral(model.filter(null,
         iri(TD.hasSecurityConfiguration), null));
@@ -130,12 +135,6 @@ public class TDGraphReader {
       model.add(thingId, iri(TD.hasSecurityConfiguration),
           iri(uriToUse + instanceName.get().stringValue()));
     }
-
-    final var t = Models.subjectBNode(model.filter(null,
-        iri(TD.hasInstanceConfiguration), null));
-
-    System.out.println(t);
-
   }
 
 

@@ -116,7 +116,6 @@ class SchemaGraphReader {
     /* Read required properties */
     Set<Literal> requiredProperties = Models.objectLiterals(model.filter(schemaId,
         rdf.createIRI(JSONSchema.required), null));
-    System.out.println(requiredProperties);
     for (Literal requiredProp : requiredProperties) {
       builder.addRequiredProperties(requiredProp.stringValue());
     }

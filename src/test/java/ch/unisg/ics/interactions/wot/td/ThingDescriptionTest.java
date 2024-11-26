@@ -4,6 +4,7 @@ import ch.unisg.ics.interactions.wot.td.affordances.ActionAffordance;
 import ch.unisg.ics.interactions.wot.td.affordances.EventAffordance;
 import ch.unisg.ics.interactions.wot.td.affordances.Form;
 import ch.unisg.ics.interactions.wot.td.affordances.PropertyAffordance;
+import ch.unisg.ics.interactions.wot.td.clients.TDHttpRequest;
 import ch.unisg.ics.interactions.wot.td.io.InvalidTDException;
 import ch.unisg.ics.interactions.wot.td.io.TDGraphReader;
 import ch.unisg.ics.interactions.wot.td.io.TDGraphWriter;
@@ -14,7 +15,6 @@ import ch.unisg.ics.interactions.wot.td.vocabularies.HTV;
 import ch.unisg.ics.interactions.wot.td.vocabularies.JSONSchema;
 import ch.unisg.ics.interactions.wot.td.vocabularies.TD;
 import ch.unisg.ics.interactions.wot.td.vocabularies.WoTSec;
-import com.apicatalog.jsonld.JsonLdError;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -27,7 +27,6 @@ import org.junit.Test;
 import java.util.List;
 import java.util.Optional;
 
-import static org.eclipse.rdf4j.model.util.Values.iri;
 import static org.junit.Assert.*;
 
 public class ThingDescriptionTest {
@@ -112,19 +111,53 @@ public class ThingDescriptionTest {
   }
 
   @Test
-  public void testInputJson() throws IOException, URISyntaxException, JsonLdError {
+  public void testOutputJson() throws URISyntaxException, IOException {
     final var inputJsonLdString = Files.readString(
-        Path.of(ClassLoader.getSystemResource("uarm.jsonld").toURI()),
+        Path.of(ClassLoader.getSystemResource("inputSec.td.jsonld").toURI()),
+        StandardCharsets.UTF_8
+    );
+    /*
+
+    Model m = ReadWriteUtils.loadModel(RDFFormat.JSONLD,inputJsonLdString,null);
+
+    String jsonString = ReadWriteUtils.modelToString(m, RDFFormat.JSONLD, null);
+
+   */
+
+    ThingDescription td = TDGraphReader.readFromString(ThingDescription.TDFormat.RDF_JSONLD,
+        inputJsonLdString);
+
+
+    TDGraphWriter wr = new TDGraphWriter(td);
+    wr.setNamespace("td", TD.PREFIX);
+    wr.setNamespace("wotsec", WoTSec.PREFIX);
+    wr.setNamespace("htv", HTV.PREFIX);
+    wr.setNamespace("hctl", HCTL.PREFIX);
+    wr.setNamespace("schema", JSONSchema.PREFIX);
+    wr.setNamespace("xml", "http://www.w3.org/2001/XMLSchema#");
+    wr.setNamespace("hmas", "https://purl.org/hmas/");
+    String jsonString = wr.write(RDFFormat.JSONLD);
+
+
+
+    System.out.println(jsonString);
+
+
+
+  }
+
+
+
+  @Test
+  public void testInputJson()
+      throws IOException, URISyntaxException {
+    final var inputJsonLdString = Files.readString(
+        Path.of(ClassLoader.getSystemResource("lightOnSite.jsonld").toURI()),
         StandardCharsets.UTF_8
     );
 
-    ThingDescription td = TDGraphReader.readFromString(ThingDescription.TDFormat.RDF_JSONLD, inputJsonLdString);
-
-    // final var t = td.getPropertyByName("homeLoc").orElseThrow();
-    // final var f = t.getFirstFormForOperationType(TD.readProperty).orElseThrow();
-
-    // TDHttpRequest r = new TDHttpRequest(f, TD.readProperty);
-
+    ThingDescription td = TDGraphReader.readFromURL(ThingDescription.TDFormat.RDF_JSONLD,"http" +
+        "://plugfest.thingweb.io:8081/");
 
     TDGraphWriter wr = new TDGraphWriter(td);
     wr.setNamespace("td", TD.PREFIX);
@@ -136,64 +169,17 @@ public class ThingDescriptionTest {
     wr.setNamespace("hmas", "https://purl.org/hmas/");
     System.out.println(wr.write(RDFFormat.TURTLE));
 
+    var p = td.getPropertyByName("things");
+    var f = p.get().getForms().getFirst();
 
-    // r.execute();
-
-    /*
-    RDF4J rdfImpl = new RDF4J();
-
-    final var g = ReadWriteUtils.stringToGraph(inputJsonLdString,
-        rdfImpl.createIRI("http://plugfest.thingweb" +
-            ".io:8081/"), RDFSyntax.JSONLD);
-
-    final var s = ReadWriteUtils.graphToString(g, RDFSyntax.TURTLE);
+    Form x = new Form.Builder(f.getTarget().substring(0,f.getTarget().indexOf("%7B?")))
+        .addOperationTypes(f.getOperationTypes())
+        .build();
 
 
+    TDHttpRequest r = new TDHttpRequest(x, f.getOperationTypes().stream().findFirst().get());
 
-    Document document =
-        JsonDocument.of(new ByteArrayInputStream(inputJsonLdString.getBytes()));
-
-    final var l = JsonLd.expand(document).get();
-    final var rdf = JsonLd.toRdf(document).get();
-
-    System.out.println(rdf.getDefaultGraph().toList());
-
-
-
-/*
-
-    final var t = ReadWriteUtils.stringToGraph(l.toString(), rdfImpl.createIRI("http://plugfest" +
-        ".thingweb.io:8081/"), RDFSyntax.JSONLD);
-    final var a = ReadWriteUtils.graphToString(t, RDFSyntax.TURTLE);
-
-    System.out.println(a);
-
-    /*a
-
-    JSONLDParser parser = new JSONLDParser();
-    parser.set(JSONLDSettings.SECURE_MODE, false);
-    parser.set(JSONLDSettings.USE_NATIVE_TYPES, true);
-    parser.set(JSONLDSettings.USE_RDF_TYPE, true);
-    parser.set(JSONLDSettings.HIERARCHICAL_VIEW,true);
-    InputStream inputStream =
-        new ByteArrayInputStream(inputJsonLdString.getBytes(StandardCharsets.UTF_8));
-    final var model = new LinkedHashModel();
-    model.setNamespace("td", TD.PREFIX);
-    model.setNamespace("wotsec", WoTSec.PREFIX);
-    model.setNamespace("htv", HTV.PREFIX);
-    model.setNamespace("hctl", HCTL.PREFIX);
-    model.setNamespace("schema", JSONSchema.PREFIX);
-    model.setNamespace("xml", "http://www.w3.org/2001/XMLSchema#");
-    model.setNamespace("hmas", "https://purl.org/hmas/");
-    parser.setRDFHandler(new StatementCollector(model));
-    parser.parse(inputStream);
-
-    final var please = ReadWriteUtils.modelToString(model, RDFFormat.TURTLE, null);
-    System.out.println(please);
-
-    final var td = TDGraphReader.readFromString(ThingDescription.TDFormat.RDF_TURTLE, please);
-
-     */
+    r.execute();
   }
 
   @Test
