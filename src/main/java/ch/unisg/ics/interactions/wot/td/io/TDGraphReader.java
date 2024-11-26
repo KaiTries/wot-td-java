@@ -101,13 +101,43 @@ public class TDGraphReader {
     } else {
       this.baseUri = null;
     }
+
     try {
       thingId = Models.subject(model.filter(null, rdf.createIRI(TD.hasSecurityConfiguration),
           null)).get();
     } catch (NoSuchElementException e) {
       throw new InvalidTDException("Missing mandatory security definitions.", e);
     }
+
+    if(format.equals(RDFFormat.JSONLD)) {
+      fixModel();
+    }
   }
+
+  private void fixModel() {
+    String uriToUse;
+    if (this.baseUri == null) {
+      System.out.println("TD did not specify a base but used relative uris");
+      uriToUse = "http://example.org/";
+    } else {
+      uriToUse = this.baseUri;
+    }
+    model.remove(null, iri(TD.hasBase), null);
+    final var instanceName = Models.objectLiteral(model.filter(null,
+        iri(TD.hasSecurityConfiguration), null));
+    if (instanceName.isPresent()) {
+      model.remove(null, iri(TD.hasSecurityConfiguration), null);
+      model.add(thingId, iri(TD.hasSecurityConfiguration),
+          iri(uriToUse + instanceName.get().stringValue()));
+    }
+
+    final var t = Models.subjectBNode(model.filter(null,
+        iri(TD.hasInstanceConfiguration), null));
+
+    System.out.println(t);
+
+  }
+
 
   private void loadModel(RDFFormat format, String representation, String baseURI) {
     this.model = new LinkedHashModel();
@@ -148,6 +178,8 @@ public class TDGraphReader {
       throw new InvalidTDException("Missing mandatory title.", e);
     }
 
+    model.remove(thingId,rdf.createIRI(TD.title), thingTitle);
+
     return thingTitle.stringValue();
   }
 
@@ -167,11 +199,85 @@ public class TDGraphReader {
 
   }
 
+  /*
+
 
   Set<String> readSecuritySchemes() {
     return Set.of();
   }
 
+  */
+
+  /*
+<urn:dev:ops:32473-HueLight-2> a td:Thing;
+  td:title "Philips Hue Lamp", "Philips Hue Lamp"@en;
+  td:definesSecurityScheme [ a wotsec:APIKeySecurityScheme;
+      wotsec:in "header";
+      wotsec:name "hue-application-key";
+      td:hasInstanceConfiguration base:basic_sc
+    ];
+  td:description "A Philips Hue lamp that can be controlled via the Hue Bridge"@en;
+  td:hasSecurityConfiguration base:basic_sc .
+   */
+
+  Map<String, SecurityScheme> readSecurityDefinitions() {
+    Set<Resource> schemeIds = Models.objectResources(model.filter(thingId,
+        rdf.createIRI(TD.hasSecurityConfiguration), null));
+
+    if (schemeIds.isEmpty()) {
+      throw new InvalidTDException("Missing mandatory security configuration.");
+    }
+
+    Map<String, SecurityScheme> schemes = new HashMap<>();
+
+    for (Resource schemeId : schemeIds) {
+      SecurityScheme scheme;
+      Optional<BNode> schemeTypeIRIs = Models.subjectBNode(model.filter(null,
+          iri(TD.hasInstanceConfiguration), schemeId));
+      Optional<BNode> bNode = Models.subjectBNode(model.filter(null,
+          iri(TD.hasInstanceConfiguration), schemeId));
+
+      if (bNode.isEmpty()) {
+        System.out.println("failed to find security scheme");
+        continue;
+      }
+      var schemeTypes = Models.objectIRI(model.filter(bNode.get(), RDF.TYPE, null));
+
+      Set<String> semanticTypes = schemeTypes.stream()
+          .map(Value::stringValue)
+          .collect(Collectors.toSet());
+
+      try {
+        if (semanticTypes.contains(WoTSec.NoSecurityScheme)) {
+          scheme = SecurityScheme.getNoSecurityScheme();
+        } else if (semanticTypes.contains(WoTSec.APIKeySecurityScheme)) {
+          scheme = readAPIKeySecurityScheme(bNode.get(), semanticTypes);
+        } else if (semanticTypes.contains(WoTSec.BasicSecurityScheme)) {
+          scheme = readBasicSecurityScheme(bNode.get(), semanticTypes);
+        } else if (semanticTypes.contains(WoTSec.DigestSecurityScheme)) {
+          scheme = readDigestSecurityScheme(bNode.get(), semanticTypes);
+        } else if (semanticTypes.contains(WoTSec.BearerSecurityScheme)) {
+          scheme = readBearerSecurityScheme(bNode.get(), semanticTypes);
+        } else if (semanticTypes.contains(WoTSec.PSKSecurityScheme)) {
+          scheme = readPSKSecurityScheme(bNode.get(), semanticTypes);
+        } else if (semanticTypes.contains(WoTSec.OAuth2SecurityScheme)) {
+          scheme = readOAuth2SecurityScheme(schemeId, semanticTypes);
+        } else {
+          throw new InvalidTDException("Unknown type of security scheme");
+        }
+        schemes.put(schemeId.stringValue(), scheme);
+
+        model.remove(bNode.get(),null,null);
+        model.remove(thingId, rdf.createIRI(TD.definesSecurityScheme), bNode.get());
+
+      } catch (Exception e) {
+        throw new InvalidTDException("Invalid security scheme configuration", e);
+      }
+    }
+
+    return schemes;
+  }
+  /*
   Map<String, SecurityScheme> readSecurityDefinitions() {
     Set<Resource> schemeIds = Models.objectResources(model.filter(thingId,
       rdf.createIRI(TD.hasSecurityConfiguration), null));
@@ -233,6 +339,8 @@ public class TDGraphReader {
     return schemes;
   }
 
+
+   */
   private SecurityScheme readTokenBasedSecurityScheme(TokenBasedSecurityScheme.Builder<?, ?> schemeBuilder, Resource schemeId,
                                               Set<String> semanticTypes) {
     Optional<Literal> in = Models.objectLiteral(model.filter(schemeId, rdf.createIRI(WoTSec.in), null));

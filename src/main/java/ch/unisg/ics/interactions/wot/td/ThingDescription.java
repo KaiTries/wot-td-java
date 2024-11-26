@@ -1,10 +1,13 @@
 package ch.unisg.ics.interactions.wot.td;
 
+import static org.eclipse.rdf4j.model.util.Values.iri;
+
 import ch.unisg.ics.interactions.wot.td.affordances.ActionAffordance;
 import ch.unisg.ics.interactions.wot.td.affordances.EventAffordance;
 import ch.unisg.ics.interactions.wot.td.affordances.PropertyAffordance;
 import ch.unisg.ics.interactions.wot.td.io.InvalidTDException;
 import ch.unisg.ics.interactions.wot.td.security.SecurityScheme;
+import ch.unisg.ics.interactions.wot.td.vocabularies.TD;
 import ch.unisg.ics.interactions.wot.td.vocabularies.WoTSec;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -14,6 +17,7 @@ import org.eclipse.rdf4j.model.util.ModelBuilder;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import org.eclipse.rdf4j.model.util.Models;
 
 /**
  * An immutable representation of a <a href="https://www.w3.org/TR/wot-thing-description/">W3C Web of
@@ -51,7 +55,7 @@ public class ThingDescription {
     this.security = security;
     this.securityDefinitions = securityDefinitions;
 
-    // Set up nosec security
+    /* Set up nosec security
     if (this.security.isEmpty()) {
       if (getFirstSecuritySchemeByType(WoTSec.NoSecurityScheme).isPresent()) {
         this.security.add(getFirstSecuritySchemeByType(WoTSec.NoSecurityScheme).get());
@@ -61,6 +65,7 @@ public class ThingDescription {
         this.securityDefinitions.put("nosec", nosec);
       }
     }
+     */
 
     this.uri = uri;
     this.types = types;
@@ -69,6 +74,27 @@ public class ThingDescription {
     this.properties = properties;
     this.actions = actions;
     this.events = events;
+
+    /*
+    if (graph.isPresent()) {
+      final var m = graph.get();
+      if (baseURI.isPresent()) {
+        m.remove(null, iri(TD.hasBase), null);
+        if (uri.isPresent()) {
+          final var instanceName = Models.objectLiteral(m.filter(null,
+              iri(TD.hasSecurityConfiguration), null));
+          if (instanceName.isPresent()) {
+            m.remove(null, iri(TD.hasSecurityConfiguration), null);
+            m.add(iri(uri.get()), iri(TD.hasSecurityConfiguration),
+                iri(baseURI.get() + instanceName.get().stringValue()));
+          }
+        }
+      }
+
+    }
+
+     */
+
 
     this.graph = graph;
   }

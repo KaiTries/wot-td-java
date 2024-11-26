@@ -114,7 +114,7 @@ public class ThingDescriptionTest {
   @Test
   public void testInputJson() throws IOException, URISyntaxException, JsonLdError {
     final var inputJsonLdString = Files.readString(
-        Path.of(ClassLoader.getSystemResource("armor.td.jsonld").toURI()),
+        Path.of(ClassLoader.getSystemResource("uarm.jsonld").toURI()),
         StandardCharsets.UTF_8
     );
 

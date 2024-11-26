@@ -81,11 +81,17 @@ public class TDGraphWriter {
     List<IRI> confTypesForIris = new ArrayList<>(Arrays.asList(rdf.createIRI(WoTSec.authorization),
       rdf.createIRI(WoTSec.token), rdf.createIRI(WoTSec.refresh)));
 
-    for (SecurityScheme scheme : securitySchemes.values()) {
+    for (String schemeName : securitySchemes.keySet()) {
+      SecurityScheme scheme = securitySchemes.get(schemeName);
       BNode schemeId = rdf.createBNode();
-      graphBuilder.add(thingId, rdf.createIRI(TD.hasSecurityConfiguration), schemeId);
+      graphBuilder.add(thingId, rdf.createIRI(TD.hasSecurityConfiguration),
+          rdf.createIRI(schemeName));
+      graphBuilder.add(thingId, rdf.createIRI(TD.definesSecurityScheme), schemeId);
+      graphBuilder.add(schemeId, rdf.createIRI(TD.hasInstanceConfiguration),
+          rdf.createIRI(schemeName));
 
       Map<String, Object> configuration = scheme.getConfiguration();
+      System.out.println(configuration);
 
       for (String semanticType : scheme.getSemanticTypes()) {
         graphBuilder.add(schemeId, RDF.TYPE, rdf.createIRI(semanticType));

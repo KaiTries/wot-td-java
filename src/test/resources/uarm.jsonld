@@ -389,12 +389,13 @@
             "type": "object"
         }
     },
-
+    "security": [
+        "nosec_sc"
+    ],
     "securityDefinitions": {
         "nosec_sc": {
             "scheme": "nosec"
         }
     },
-    "security": "nosec_sc",
     "title": "Uarm"
 }

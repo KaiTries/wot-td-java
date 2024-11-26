@@ -90,22 +90,22 @@ class SchemaGraphReader {
     for (Resource property : propertyIds) {
       Optional<DataSchema> propertySchema = readDataSchema(property);
       if (propertySchema.isPresent()) {
-        if (!(propertySchema.get() instanceof ArraySchema)) {
-          System.out.println(propertySchema.get().getClass());
+        if (!(propertySchema.get() instanceof ArraySchema) && !(propertySchema.get() instanceof  IntegerSchema)) {
           // Each property of an object should also have an associated property name
           Optional<Literal> propertyName = Models.objectLiteral(model.filter(property,
               rdf.createIRI(JSONSchema.propertyName), null));
+
 
           if (propertyName.isEmpty()) {
             throw new InvalidTDException("ObjectSchema property is missing a property name.");
           }
           builder.addProperty(propertyName.get().stringValue(), propertySchema.get());
         } else {
-          propertySchema.get();// Each property of an object should also have an associated property name
           Optional<Literal> propertyName = Models.objectLiteral(model.filter(property,
               rdf.createIRI(TD.name), null));
           if (propertyName.isEmpty()) {
-            throw new InvalidTDException("ArraySchema property is missing a property name.");
+            throw new InvalidTDException("ArraySchema / Integer schema property is missing a " +
+                "property name.");
           }
           builder.addProperty(propertyName.get().stringValue(), propertySchema.get());
 
